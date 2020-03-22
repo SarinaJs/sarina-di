@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"outDir": "dist",
+		"declaration": true,
+		"removeComments": true,
+		"noLib": false,
+		"sourceMap": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"allowJs": true,
+		"skipLibCheck": true,
+		"incremental": true,
+		"lib": ["es7"],
+		"baseUrl": "./",
+		"moduleResolution": "node",
+		"typeRoots": ["node_modules/@types"],
+		"paths": {
+			"@sarina/di": ["./src/index.ts"],
+			"@sarina/di/*": ["./src/*"]
+		}
+	},
+	"files": ["./node_modules/@types/node/index.d.ts"],
+	"include": ["./src/**/*.ts", "./test/**/*.ts"],
+	"exclude": ["node_modules", "dist"]
+}
