@@ -76,7 +76,9 @@ describe('dependency-injection', () => {
 					expect(sc.descriptorsMap.get('token').providers[0]).toBe(provider);
 					expect(sc.descriptorsMap.get('token').providers[1]).toBe(provider2);
 				});
-				it('build_should_create_root_container', () => {
+			});
+			describe('build()', () => {
+				it('build_should_create_root_container', async () => {
 					// Arrange
 					const sc = new ServiceCollection();
 					const provider = {
@@ -87,7 +89,7 @@ describe('dependency-injection', () => {
 					sc.add('token', provider);
 
 					// Act
-					const container = sc.build() as ServiceContainer;
+					const container = (await sc.build()) as ServiceContainer;
 					const descriptors = container.getDescriptors();
 
 					// Assert
@@ -97,6 +99,9 @@ describe('dependency-injection', () => {
 					expect(descriptors.get('token').providers).toHaveLength(1);
 					expect(descriptors.get('token').providers[0]).toBe(provider);
 				});
+			});
+			describe('addTransient', () => {
+				describe('type<any>', () => {});
 			});
 		});
 	});

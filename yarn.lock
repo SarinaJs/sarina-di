@@ -383,6 +383,11 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
+"@sarina/annotation@^1.0.0-pre":
+  version "1.0.0-pre"
+  resolved "https://registry.yarnpkg.com/@sarina/annotation/-/annotation-1.0.0-pre.tgz#aff72b1f8a51adcfad4e8003ad84401cf18329f1"
+  integrity sha512-IYH49VLOxRlHnXprbCa6tJ9bWd2lVThyEll8KOb+IxKV5/SAHn1gq0W+QiEHxJ4V0WlsxWhYUV2F8h8tSdkpWg==
+
 "@sinonjs/commons@^1.7.0":
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.7.1.tgz#da5fd19a5f71177a53778073978873964f49acf1"
@@ -3028,6 +3033,11 @@ realpath-native@^1.1.0:
   integrity sha512-wlgPA6cCIIg9gKz0fgAPjnzh4yR/LnXovwuo9hvyGvx3h8nX4+/iLZplfUWasXpqD8BdnGnP5njOFjkUwPzvjA==
   dependencies:
     util.promisify "^1.0.0"
+
+reflect-metadata@^0.1.13:
+  version "0.1.13"
+  resolved "https://registry.yarnpkg.com/reflect-metadata/-/reflect-metadata-0.1.13.tgz#67ae3ca57c972a2aa1642b10fe363fe32d49dc08"
+  integrity sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==
 
 regex-not@^1.0.0, regex-not@^1.0.2:
   version "1.0.2"

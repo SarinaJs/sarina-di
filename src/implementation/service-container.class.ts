@@ -33,7 +33,7 @@ export class ServiceContainer implements IServiceContainer {
 	public async get<TResult = any>(token: Token): Promise<TResult> {
 		const instances = await this.resolveToken(token);
 		if (instances.length == 0) return null;
-		if (instances.length > 1) throw new Error(`Multiple instance found for '${token.toString()}' token.`);
+		if (instances.length > 1) throw new Error(`Multiple instance found for '${token as any}' token.`);
 		return instances[0];
 	}
 	public async getAll<TResult = any>(token: Token): Promise<TResult[]> {
@@ -113,16 +113,19 @@ export class ServiceContainer implements IServiceContainer {
 		return result;
 	}
 	public async resolveDependency(dependency: IServiceDependency) {
-		// if the provider requires multiple instance, we can resolve all by token
-		if (dependency.isMulti == true) return await this.getAll(dependency.token);
+		const instances = await this.resolveToken(dependency.token);
 
-		// otherwise we should resolve only one instance
-		const instance = await this.get(dependency.token);
+		// if the provider requires multiple instance, we can resolve all by token
+		if (dependency.isMulti == true) return instances;
 
 		// if dependency is required and no instance found, we should throw error
-		if (instance == null && !dependency.isOptional)
-			throw new Error(`No provider found for '${dependency.token.toString()}' !`);
+		if (instances.length == 0) {
+			if (!dependency.isOptional) throw new Error(`No provider found for '${dependency.token as any}' !`);
+			return null;
+		}
 
-		return instance;
+		if (instances.length > 1) throw new Error(`Multiple instance found for '${dependency.token as any}' token.`);
+
+		return instances[0];
 	}
 }

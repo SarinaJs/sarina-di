@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"outDir": "dist",
+		"pretty": true,
+		"removeComments": true
+	},
+	"extends": "./tsconfig.json",
+	"include": ["./src/**/*.ts"]
+}

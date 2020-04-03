@@ -63,6 +63,38 @@ describe('dependency-injection', () => {
 					// Assert
 					await expect(action()).rejects.toThrowError(`No provider found for 'p1' !`);
 				});
+				it('should_fail_if_provider_is_single_and_multiple_instance_found', async () => {
+					// Arrange
+					const descriptors = new Map<Token, IServiceDescriptor>();
+					descriptors.set('p1', {
+						token: 'p1',
+						providers: [
+							{
+								dependencies: [],
+								lifetime: ServiceLifeTime.transient,
+								factory: async () =>
+									new Promise((resolve, reject) => {
+										setTimeout(() => resolve('p1'), 200);
+									}),
+							},
+							{
+								dependencies: [],
+								lifetime: ServiceLifeTime.transient,
+								factory: async () =>
+									new Promise((resolve, reject) => {
+										setTimeout(() => resolve('p2'), 100);
+									}),
+							},
+						],
+					});
+					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
+
+					// Act
+					const action = () => rootContainer.resolveDependency({ isMulti: false, token: 'p1', isOptional: false });
+
+					// Assert
+					await expect(action()).rejects.toThrowError(`Multiple instance found for 'p1' token.`);
+				});
 				it('should_resolve_providers_in_order_of_registration_for_multiple', async () => {
 					// Arrange
 					const descriptors = new Map<Token, IServiceDescriptor>();

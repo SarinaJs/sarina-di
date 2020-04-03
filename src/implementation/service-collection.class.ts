@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Token } from '../interfaces/token.type';
 import { IServiceCollection } from '../interfaces/service-collection.interface';
 import { IServiceDescriptor, IServiceProviderActivator } from '../interfaces/service-descriptor.interface';
@@ -24,7 +25,7 @@ export class ServiceCollection implements IServiceCollection {
 		return this;
 	}
 
-	public build(): IServiceContainer {
+	public async build(): Promise<IServiceContainer> {
 		// create a root sevice container with service descriptors
 		const container = new ServiceContainer({
 			isRoot: true,
