@@ -1,4 +1,11 @@
-import { ServiceContainer, Token, IServiceDescriptor, ServiceLifeTime, IServiceProviderActivator } from '@sarina/di';
+import {
+	ServiceContainer,
+	Token,
+	IServiceDescriptor,
+	ServiceLifeTime,
+	IServiceProviderActivator,
+	ResolutionContext,
+} from '@sarina/di';
 
 describe('dependency-injection', () => {
 	describe('service-container.class', () => {
@@ -17,7 +24,8 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const result = await rootContainer.resolveDependency({ isMulti: true, token: 'p1' });
+					const context = ResolutionContext.create();
+					const result = await rootContainer.resolveDependency(context, { isMulti: true, token: 'p1' });
 
 					// Assert
 					expect(result).toHaveLength(2);
@@ -36,7 +44,8 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const result = await rootContainer.resolveDependency({ isMulti: false, token: 'p1' });
+					const context = ResolutionContext.create();
+					const result = await rootContainer.resolveDependency(context, { isMulti: false, token: 'p1' });
 
 					// Assert
 					expect(result).toBe('value_for_p1-0');
@@ -47,7 +56,12 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const result = await rootContainer.resolveDependency({ isMulti: false, token: 'p1', isOptional: true });
+					const context = ResolutionContext.create();
+					const result = await rootContainer.resolveDependency(context, {
+						isMulti: false,
+						token: 'p1',
+						isOptional: true,
+					});
 
 					// Assert
 					expect(result).toBeNull();
@@ -58,7 +72,9 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const action = () => rootContainer.resolveDependency({ isMulti: false, token: 'p1', isOptional: false });
+					const context = ResolutionContext.create();
+					const action = () =>
+						rootContainer.resolveDependency(context, { isMulti: false, token: 'p1', isOptional: false });
 
 					// Assert
 					await expect(action()).rejects.toThrowError(`No provider found for 'p1' !`);
@@ -90,7 +106,9 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const action = () => rootContainer.resolveDependency({ isMulti: false, token: 'p1', isOptional: false });
+					const context = ResolutionContext.create();
+					const action = () =>
+						rootContainer.resolveDependency(context, { isMulti: false, token: 'p1', isOptional: false });
 
 					// Assert
 					await expect(action()).rejects.toThrowError(`Multiple instance found for 'p1' token.`);
@@ -122,7 +140,8 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const result = await rootContainer.resolveDependency({ isMulti: true, token: 'p1' });
+					const context = ResolutionContext.create();
+					const result = await rootContainer.resolveDependency(context, { isMulti: true, token: 'p1' });
 
 					// Assert
 					expect(result).toHaveLength(2);
@@ -137,7 +156,8 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const value = await rootContainer.resolveDependencies([]);
+					const context = ResolutionContext.create();
+					const value = await rootContainer.resolveDependencies(context, []);
 
 					// Assert
 					expect(value).toHaveLength(0);
@@ -168,7 +188,8 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const value = await rootContainer.resolveDependencies([
+					const context = ResolutionContext.create();
+					const value = await rootContainer.resolveDependencies(context, [
 						{ token: 'p1', isMulti: false, isOptional: false },
 						{ token: 'p2', isMulti: false, isOptional: false },
 					]);
@@ -210,7 +231,8 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const value = await rootContainer.resolveDependencies([
+					const context = ResolutionContext.create();
+					const value = await rootContainer.resolveDependencies(context, [
 						{ token: 'p1', isMulti: false, isOptional: false },
 						{ token: 'p2', isMulti: false, isOptional: false },
 					]);
@@ -241,7 +263,8 @@ describe('dependency-injection', () => {
 					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const value = await sc.activateProvider<string>(provider);
+					const context = ResolutionContext.create();
+					const value = await sc.activateProvider<string>(context, provider);
 
 					// Assert
 					expect(value).toBe('value');
@@ -263,7 +286,8 @@ describe('dependency-injection', () => {
 					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					await sc.activateProvider(provider);
+					const context = ResolutionContext.create();
+					await sc.activateProvider(context, provider);
 
 					// Assert
 					expect(sc.activatedInstances.has(provider)).toBeTruthy();
@@ -310,7 +334,8 @@ describe('dependency-injection', () => {
 					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const value = await sc.activateProvider(provider1);
+					const context = ResolutionContext.create();
+					const value = await sc.activateProvider(context, provider1);
 
 					// Assert
 					expect(value).toBe('p1-p2-p3-p3');
@@ -336,7 +361,8 @@ describe('dependency-injection', () => {
 					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const value = await sc.resolveOrActivate<string>(provider);
+					const context = ResolutionContext.create();
+					const value = await sc.resolveOrActivate<string>(context, provider);
 
 					// Assert
 					expect(value).toBe('value');
@@ -362,8 +388,8 @@ describe('dependency-injection', () => {
 					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const value1 = await sc.resolveOrActivate<Service>(provider);
-					const value2 = await sc.resolveOrActivate<Service>(provider);
+					const value1 = await sc.resolveOrActivate<Service>(ResolutionContext.create(), provider);
+					const value2 = await sc.resolveOrActivate<Service>(ResolutionContext.create(), provider);
 
 					// Assert
 					expect(value1).toBe(value);
@@ -392,8 +418,8 @@ describe('dependency-injection', () => {
 						const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 						// Act
-						const v1 = await rootContainer.resolveProvider<Service>(provider);
-						const v2 = await rootContainer.resolveProvider<Service>(provider);
+						const v1 = await rootContainer.resolveProvider<Service>(ResolutionContext.create(), provider);
+						const v2 = await rootContainer.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -422,8 +448,8 @@ describe('dependency-injection', () => {
 						const scopedContainer = new ServiceContainer({ isRoot: false, root: rootContainer });
 
 						// Act
-						const v1 = await scopedContainer.resolveProvider<Service>(provider);
-						const v2 = await scopedContainer.resolveProvider<Service>(provider);
+						const v1 = await scopedContainer.resolveProvider<Service>(ResolutionContext.create(), provider);
+						const v2 = await scopedContainer.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -454,7 +480,7 @@ describe('dependency-injection', () => {
 						const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 						// Act
-						const v1 = await rootContainer.resolveProvider(provider);
+						const v1 = await rootContainer.resolveProvider(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -478,10 +504,10 @@ describe('dependency-injection', () => {
 							token: 'token',
 						});
 						const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
-						const v1 = await rootContainer.resolveProvider(provider);
+						const v1 = await rootContainer.resolveProvider(ResolutionContext.create(), provider);
 
 						// Act
-						const v2 = await rootContainer.resolveProvider(provider);
+						const v2 = await rootContainer.resolveProvider(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -510,7 +536,7 @@ describe('dependency-injection', () => {
 						const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 						// Act
-						const value = await sc.resolveProvider(provider);
+						const value = await sc.resolveProvider(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(value).toBeInstanceOf(Service);
@@ -534,10 +560,10 @@ describe('dependency-injection', () => {
 							token: 'token',
 						});
 						const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
-						const v1 = await sc.resolveProvider<Service>(provider);
+						const v1 = await sc.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Act
-						const v2 = await sc.resolveProvider<Service>(provider);
+						const v2 = await sc.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -566,7 +592,7 @@ describe('dependency-injection', () => {
 						const scopedContainer = new ServiceContainer({ isRoot: false, root: rootContainer });
 
 						// Act
-						const v1 = await scopedContainer.resolveProvider<Service>(provider);
+						const v1 = await scopedContainer.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -592,10 +618,10 @@ describe('dependency-injection', () => {
 						});
 						const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 						const scopedContainer = new ServiceContainer({ isRoot: false, root: rootContainer });
-						const v1 = await scopedContainer.resolveProvider<Service>(provider);
+						const v1 = await scopedContainer.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Act
-						const v2 = await scopedContainer.resolveProvider<Service>(provider);
+						const v2 = await scopedContainer.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -626,8 +652,8 @@ describe('dependency-injection', () => {
 						const scopedContainer2 = new ServiceContainer({ isRoot: false, root: rootContainer });
 
 						// Act
-						const v1 = await scopedContainer1.resolveProvider<Service>(provider);
-						const v2 = await scopedContainer2.resolveProvider<Service>(provider);
+						const v1 = await scopedContainer1.resolveProvider<Service>(ResolutionContext.create(), provider);
+						const v2 = await scopedContainer2.resolveProvider<Service>(ResolutionContext.create(), provider);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -664,7 +690,6 @@ describe('dependency-injection', () => {
 					expect(value).toBe(descriptors);
 				});
 			});
-
 			describe('resolveToken', () => {
 				it('should_return_empty_array_if_token_not_found', async () => {
 					// Arrange
@@ -672,7 +697,7 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const instances = await rootContainer.resolveToken('token');
+					const instances = await rootContainer.resolveToken(ResolutionContext.create(), 'token');
 
 					// Assert
 					expect(instances).toHaveLength(0);
@@ -697,7 +722,7 @@ describe('dependency-injection', () => {
 					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const instances = await sc.resolveToken('token');
+					const instances = await sc.resolveToken(ResolutionContext.create(), 'token');
 
 					// Assert
 					expect(instances).toHaveLength(2);
@@ -724,12 +749,41 @@ describe('dependency-injection', () => {
 					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
 
 					// Act
-					const instances = await sc.resolveToken('token');
+					const instances = await sc.resolveToken(ResolutionContext.create(), 'token');
 
 					// Assert
 					expect(instances).toHaveLength(2);
 					expect(instances[0]).toBe('value1');
 					expect(instances[1]).toBe('value2');
+				});
+				it('should_if_cycle_dependency_found', async () => {
+					// Arrange
+					const provider1: IServiceProviderActivator = {
+						lifetime: ServiceLifeTime.transient,
+						dependencies: [{ token: 'p2' }],
+						factory: async () => new Promise((resolve, reject) => setTimeout(() => resolve('value1'), 20)),
+					};
+					const provider2: IServiceProviderActivator = {
+						lifetime: ServiceLifeTime.transient,
+						dependencies: [{ token: 'p1' }],
+						factory: async () => new Promise((resolve, reject) => setTimeout(() => resolve('value2'), 10)),
+					};
+					const descriptors = new Map<Token, IServiceDescriptor>();
+					descriptors.set('p1', {
+						providers: [provider1],
+						token: 'p1',
+					});
+					descriptors.set('p2', {
+						providers: [provider2],
+						token: 'p2',
+					});
+					const sc = new ServiceContainer({ isRoot: true, descriptors: descriptors });
+
+					// Act
+					const action = async () => await sc.resolveToken(ResolutionContext.create(), 'p2');
+
+					// Assert
+					expect(action()).rejects.toThrow('Cycle dependency found');
 				});
 			});
 

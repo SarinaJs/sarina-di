@@ -18,6 +18,27 @@ export interface ScopedServiceContainerOptions {
 }
 export type ServiceContainerOptions = ScopedServiceContainerOptions | RootServiceContainerOptions;
 
+export class ResolutionContext {
+	static create() {
+		return new ResolutionContext();
+	}
+
+	public readonly activatingToken: Token[] = [];
+
+	constructor() {}
+
+	isActivating(token: Token) {
+		return this.activatingToken.indexOf(token) != -1;
+	}
+	markAsActivating(token: Token) {
+		this.activatingToken.push(token);
+	}
+	markAsActivated(token: Token) {
+		const index = this.activatingToken.indexOf(token);
+		this.activatingToken.splice(index, 1);
+	}
+}
+
 export class ServiceContainer implements IServiceContainer {
 	public readonly activatedInstances: Map<IServiceProviderActivator, any>;
 	public readonly options: ServiceContainerOptions;
@@ -31,13 +52,13 @@ export class ServiceContainer implements IServiceContainer {
 		return this.getDescriptors().has(token);
 	}
 	public async get<TResult = any>(token: Token): Promise<TResult> {
-		const instances = await this.resolveToken(token);
+		const instances = await this.resolveToken(ResolutionContext.create(), token);
 		if (instances.length == 0) return null;
 		if (instances.length > 1) throw new Error(`Multiple instance found for '${token as any}' token.`);
 		return instances[0];
 	}
 	public async getAll<TResult = any>(token: Token): Promise<TResult[]> {
-		const instances = await this.resolveToken(token);
+		const instances = await this.resolveToken(ResolutionContext.create(), token);
 		return instances;
 	}
 	public createScope(): IServiceContainer {
@@ -51,9 +72,12 @@ export class ServiceContainer implements IServiceContainer {
 		if (this.options.isRoot == true) return this.options.descriptors;
 		else return this.options.root.getDescriptors();
 	}
-	public async resolveToken(token: Token) {
+	public async resolveToken(context: ResolutionContext, token: Token) {
 		// if not exists we should return null
 		if (!this.has(token)) return [];
+
+		if (context.isActivating(token)) throw new Error('Cycle dependency found');
+		context.markAsActivating(token);
 
 		// resolve the descriptor
 		const theDescriptor = this.getDescriptors().get(token);
@@ -62,37 +86,37 @@ export class ServiceContainer implements IServiceContainer {
 		const result = [];
 		for (let providerIndex = 0; providerIndex < theDescriptor.providers.length; providerIndex++) {
 			const provider = theDescriptor.providers[providerIndex];
-			const instance = await this.resolveProvider(provider);
+			const instance = await this.resolveProvider(context, provider);
 			result.push(instance);
 		}
-
+		context.markAsActivated(token);
 		return result;
 	}
-	public async resolveProvider<T>(provider: IServiceProviderActivator): Promise<T> {
+	public async resolveProvider<T>(context: ResolutionContext, provider: IServiceProviderActivator): Promise<T> {
 		// Based on provider lifetime the activation will be different
 		//	1. transient: always new instance will be activated
 		//	2. scoped	: activate once per container, and use the same object for other resolving request
 		//	3. singleton: activate once per root-container.
 
-		if (provider.lifetime == ServiceLifeTime.transient) return await this.activateProvider<T>(provider);
-		else if (provider.lifetime == ServiceLifeTime.scoped) return await this.resolveOrActivate<T>(provider);
+		if (provider.lifetime == ServiceLifeTime.transient) return await this.activateProvider<T>(context, provider);
+		else if (provider.lifetime == ServiceLifeTime.scoped) return await this.resolveOrActivate<T>(context, provider);
 		else {
 			// if the current container is the root one, we should use that to activate the provider
-			if (this.options.isRoot == true) return await this.resolveOrActivate(provider);
+			if (this.options.isRoot == true) return await this.resolveOrActivate(context, provider);
 			// otherwise we should ask the root container to resolve the provider
-			else return await this.options.root.resolveProvider(provider);
+			else return await this.options.root.resolveProvider(context, provider);
 		}
 	}
-	public async resolveOrActivate<T>(provider: IServiceProviderActivator): Promise<T> {
+	public async resolveOrActivate<T>(context: ResolutionContext, provider: IServiceProviderActivator): Promise<T> {
 		// if the provider already exists, return existing one
 		if (this.activatedInstances.has(provider)) return this.activatedInstances.get(provider) as T;
 
 		// if the provider does not exists, activate the instance
-		return await this.activateProvider<T>(provider);
+		return await this.activateProvider<T>(context, provider);
 	}
-	public async activateProvider<T>(provider: IServiceProviderActivator): Promise<T> {
+	public async activateProvider<T>(context: ResolutionContext, provider: IServiceProviderActivator): Promise<T> {
 		// first we need to resolve dependencies
-		const dependencies = await this.resolveDependencies(provider.dependencies);
+		const dependencies = await this.resolveDependencies(context, provider.dependencies);
 
 		// instantiate the provider by calling the factory method and passing the dependencies
 		const instance = await provider.factory.apply(null, dependencies);
@@ -104,16 +128,16 @@ export class ServiceContainer implements IServiceContainer {
 
 		return instance;
 	}
-	public async resolveDependencies(dependencies: IServiceDependency[]): Promise<any[]> {
+	public async resolveDependencies(context: ResolutionContext, dependencies: IServiceDependency[]): Promise<any[]> {
 		const result: any[] = [];
 		for (let depIndex = 0; depIndex < dependencies.length; depIndex++) {
 			const dependency = dependencies[depIndex];
-			result.push(await this.resolveDependency(dependency));
+			result.push(await this.resolveDependency(context, dependency));
 		}
 		return result;
 	}
-	public async resolveDependency(dependency: IServiceDependency) {
-		const instances = await this.resolveToken(dependency.token);
+	public async resolveDependency(context: ResolutionContext, dependency: IServiceDependency) {
+		const instances = await this.resolveToken(context, dependency.token);
 
 		// if the provider requires multiple instance, we can resolve all by token
 		if (dependency.isMulti == true) return instances;
