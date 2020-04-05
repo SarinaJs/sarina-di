@@ -1,2 +1,3 @@
-export * from './service-collection.class';
-export * from './service-container.class';
+export * from './service-collection';
+export * from './service-provider';
+export * from './service-resolver';

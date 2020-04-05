@@ -1,23 +1,16 @@
 import { Token } from '../interfaces/token.type';
-import { IServiceContainer } from './../interfaces/service-container.interface';
-import {
-	IServiceDescriptor,
-	IServiceProviderActivator,
-	IServiceDependency,
-} from '../interfaces/service-descriptor.interface';
-import { ServiceLifeTime } from '../interfaces/service-lifetime.enum';
+import { IServiceProvider } from './../interfaces/service-provider.interface';
+import { ServiceDescriptor, ServiceDependency, ServiceLifeTime } from '../interfaces/service-descriptor.model';
+import { ServiceResolver } from './service-resolver';
+
+// models
+export interface ServiceInstance<T = any> {
+	token: Token;
+	descriptor: ServiceDescriptor;
+	instance: T;
+}
 
 // interface
-export interface RootServiceContainerOptions {
-	isRoot: true;
-	descriptors: Map<Token, IServiceDescriptor>;
-}
-export interface ScopedServiceContainerOptions {
-	isRoot: false;
-	root: ServiceContainer;
-}
-export type ServiceContainerOptions = ScopedServiceContainerOptions | RootServiceContainerOptions;
-
 export class ResolutionContext {
 	static create() {
 		return new ResolutionContext();
@@ -39,17 +32,22 @@ export class ResolutionContext {
 	}
 }
 
-export class ServiceContainer implements IServiceContainer {
-	public readonly activatedInstances: Map<IServiceProviderActivator, any>;
-	public readonly options: ServiceContainerOptions;
+export class ServiceProvider implements IServiceProvider {
+	public static createRootProvider(resolver: ServiceResolver): ServiceProvider {
+		return new ServiceProvider(resolver);
+	}
 
-	public constructor(options: ServiceContainerOptions) {
-		this.activatedInstances = new Map<IServiceProviderActivator, any>();
-		this.options = options;
+	public readonly parent: ServiceProvider;
+	public readonly resolver: ServiceResolver;
+	public readonly instances: Map<ServiceDescriptor, ServiceInstance> = new Map<ServiceDescriptor, ServiceInstance>();
+
+	public constructor(resolver: ServiceResolver, parent?: ServiceProvider) {
+		this.resolver = resolver;
+		this.parent = parent || null;
 	}
 
 	public has(token: Token): boolean {
-		return this.getDescriptors().has(token);
+		return this.resolver.has(token);
 	}
 	public async get<TResult = any>(token: Token): Promise<TResult> {
 		const instances = await this.resolveToken(ResolutionContext.create(), token);
@@ -61,17 +59,10 @@ export class ServiceContainer implements IServiceContainer {
 		const instances = await this.resolveToken(ResolutionContext.create(), token);
 		return instances;
 	}
-	public createScope(): IServiceContainer {
-		return new ServiceContainer({
-			isRoot: false,
-			root: this.options.isRoot == true ? this : this.options.root,
-		});
+	public createScope(): IServiceProvider {
+		return new ServiceProvider(this.resolver, this);
 	}
 
-	public getDescriptors(): Map<Token, IServiceDescriptor> {
-		if (this.options.isRoot == true) return this.options.descriptors;
-		else return this.options.root.getDescriptors();
-	}
 	public async resolveToken(context: ResolutionContext, token: Token) {
 		// if not exists we should return null
 		if (!this.has(token)) return [];
@@ -80,55 +71,59 @@ export class ServiceContainer implements IServiceContainer {
 		context.markAsActivating(token);
 
 		// resolve the descriptor
-		const theDescriptor = this.getDescriptors().get(token);
+		const descriptors = this.resolver.resolveAll(token);
 
 		// we should resolve all providers of the token
 		const result = [];
-		for (let providerIndex = 0; providerIndex < theDescriptor.providers.length; providerIndex++) {
-			const provider = theDescriptor.providers[providerIndex];
-			const instance = await this.resolveProvider(context, provider);
+		for (let index = 0; index < descriptors.length; index++) {
+			const service = descriptors[index];
+			const instance = await this.resolveDescriptor(context, service);
 			result.push(instance);
 		}
 		context.markAsActivated(token);
 		return result;
 	}
-	public async resolveProvider<T>(context: ResolutionContext, provider: IServiceProviderActivator): Promise<T> {
+	public async resolveDescriptor<T>(context: ResolutionContext, descriptor: ServiceDescriptor): Promise<T> {
 		// Based on provider lifetime the activation will be different
 		//	1. transient: always new instance will be activated
 		//	2. scoped	: activate once per container, and use the same object for other resolving request
 		//	3. singleton: activate once per root-container.
 
-		if (provider.lifetime == ServiceLifeTime.transient) return await this.activateProvider<T>(context, provider);
-		else if (provider.lifetime == ServiceLifeTime.scoped) return await this.resolveOrActivate<T>(context, provider);
+		if (descriptor.lifetime == ServiceLifeTime.transient) return await this.activate<T>(context, descriptor);
+		else if (descriptor.lifetime == ServiceLifeTime.scoped) return await this.resolveOrActivate<T>(context, descriptor);
 		else {
 			// if the current container is the root one, we should use that to activate the provider
-			if (this.options.isRoot == true) return await this.resolveOrActivate(context, provider);
+			if (!this.parent) return await this.resolveOrActivate(context, descriptor);
 			// otherwise we should ask the root container to resolve the provider
-			else return await this.options.root.resolveProvider(context, provider);
+			else return await this.parent.resolveDescriptor(context, descriptor);
 		}
 	}
-	public async resolveOrActivate<T>(context: ResolutionContext, provider: IServiceProviderActivator): Promise<T> {
+	public async resolveOrActivate<T>(context: ResolutionContext, descriptor: ServiceDescriptor): Promise<T> {
 		// if the provider already exists, return existing one
-		if (this.activatedInstances.has(provider)) return this.activatedInstances.get(provider) as T;
+		if (this.instances.has(descriptor)) return this.instances.get(descriptor).instance;
 
 		// if the provider does not exists, activate the instance
-		return await this.activateProvider<T>(context, provider);
+		return await this.activate<T>(context, descriptor);
 	}
-	public async activateProvider<T>(context: ResolutionContext, provider: IServiceProviderActivator): Promise<T> {
+	public async activate<T>(context: ResolutionContext, descriptor: ServiceDescriptor): Promise<T> {
 		// first we need to resolve dependencies
-		const dependencies = await this.resolveDependencies(context, provider.dependencies);
+		const dependencies = await this.resolveDependencies(context, descriptor.dependencies);
 
 		// instantiate the provider by calling the factory method and passing the dependencies
-		const instance = await provider.factory.apply(null, dependencies);
+		const instance = await descriptor.factory.apply(null, dependencies);
 
 		// if the provider lifetime != transient, we should keep track of the provider for next-activation
-		if (provider.lifetime != ServiceLifeTime.transient) {
-			this.activatedInstances.set(provider, instance);
+		if (descriptor.lifetime != ServiceLifeTime.transient) {
+			this.instances.set(descriptor, {
+				descriptor: descriptor,
+				instance: instance,
+				token: descriptor.token,
+			});
 		}
 
 		return instance;
 	}
-	public async resolveDependencies(context: ResolutionContext, dependencies: IServiceDependency[]): Promise<any[]> {
+	public async resolveDependencies(context: ResolutionContext, dependencies: ServiceDependency[]): Promise<any[]> {
 		const result: any[] = [];
 		for (let depIndex = 0; depIndex < dependencies.length; depIndex++) {
 			const dependency = dependencies[depIndex];
@@ -136,7 +131,7 @@ export class ServiceContainer implements IServiceContainer {
 		}
 		return result;
 	}
-	public async resolveDependency(context: ResolutionContext, dependency: IServiceDependency) {
+	public async resolveDependency(context: ResolutionContext, dependency: ServiceDependency) {
 		const instances = await this.resolveToken(context, dependency.token);
 
 		// if the provider requires multiple instance, we can resolve all by token
