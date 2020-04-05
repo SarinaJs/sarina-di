@@ -1,4 +1,4 @@
-import { Token } from './token.type';
+import { Token } from './token';
 import { IServiceProvider } from './service-provider.interface';
 import { ServiceDescriptor } from './service-descriptor.model';
 

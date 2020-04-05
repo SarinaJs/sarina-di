@@ -1,4 +1,4 @@
-import { Token } from '../interfaces/token.type';
+import { Token } from '../interfaces/token';
 import { IServiceProvider } from './../interfaces/service-provider.interface';
 import { ServiceDescriptor, ServiceDependency, ServiceLifeTime } from '../interfaces/service-descriptor.model';
 import { ServiceResolver } from './service-resolver';

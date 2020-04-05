@@ -1,4 +1,4 @@
-import { Token } from './token.type';
+import { Token } from './token';
 
 export enum ServiceLifeTime {
 	transient = 'transient',
