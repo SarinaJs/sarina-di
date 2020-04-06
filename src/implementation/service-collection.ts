@@ -1,12 +1,12 @@
-import { Token } from '../interfaces/token';
 import { getType } from '@sarina/annotation';
-import { isInjectable, getInjectData, isMultipleParameter, isOptionalParameter } from '../annotations';
+import { Token } from '../interfaces/token';
 import { Type, isType } from '../interfaces/type';
 import { ServiceResolver } from './service-resolver';
 import { ServiceProvider } from './service-provider';
-import { IServiceProvider } from '../interfaces/service-provider.interface';
 import { IServiceCollection } from '../interfaces/service-collection.interface';
-import { ServiceDescriptor, ServiceLifeTime, ServiceDependency } from '../interfaces/service-descriptor.model';
+import { ServiceDescriptor, ServiceLifeTime } from '../interfaces/service-descriptor.model';
+import { isInjectable, getInjectData, isMultipleParameter, isOptionalParameter } from '../annotations';
+import { IServiceProvider, SERVICE_PROVIDER_INJECTION_TOKEN } from '../interfaces/service-provider.interface';
 
 export class ServiceCollection implements IServiceCollection {
 	public services: ServiceDescriptor[] = [];
@@ -19,6 +19,11 @@ export class ServiceCollection implements IServiceCollection {
 
 	public add(type: Type<any>, lifetime: ServiceLifeTime): IServiceCollection;
 	public add(service: ServiceDescriptor): IServiceCollection;
+	public add<TService = any>(
+		token: Token<any>,
+		factory: (provider: IServiceProvider) => Promise<TService>,
+		lifetime: ServiceLifeTime,
+	): IServiceCollection;
 	public add(...args: any[]) {
 		if (args.length == 0) return this;
 		if (args.length == 1) {
@@ -26,6 +31,9 @@ export class ServiceCollection implements IServiceCollection {
 		}
 		if (args.length == 2 && isType(args[0])) {
 			this.services.push(this.getDescriptorByType(args[0], args[1]));
+		}
+		if (args.length == 3) {
+			this.services.push(this.getDescriptorByFactory(args[0], args[1], args[2]));
 		}
 
 		return this;
@@ -67,6 +75,24 @@ export class ServiceCollection implements IServiceCollection {
 			factory: (...args: any[]) => new type(...args),
 			lifetime: lifetime,
 			token: type,
+		};
+	}
+	public getDescriptorByFactory<T>(
+		token: Token,
+		factory: (provider: IServiceProvider) => Promise<T>,
+		lifetime: ServiceLifeTime,
+	): ServiceDescriptor {
+		return {
+			dependencies: [
+				{
+					token: SERVICE_PROVIDER_INJECTION_TOKEN,
+					isMulti: false,
+					isOptional: false,
+				},
+			],
+			factory: factory,
+			lifetime: lifetime,
+			token: token,
 		};
 	}
 }

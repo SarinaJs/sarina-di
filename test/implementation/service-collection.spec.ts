@@ -6,8 +6,10 @@ import {
 	inject,
 	multiple,
 	optional,
+	ServiceDescriptor,
+	SERVICE_PROVIDER_INJECTION_TOKEN,
+	IServiceProvider,
 } from '@sarina/di';
-import { reflectable } from '@sarina/annotation';
 
 describe('dependency-injection', () => {
 	describe('service-collection', () => {
@@ -106,6 +108,24 @@ describe('dependency-injection', () => {
 						expect(sc.services[0].token).toBe(SampleType);
 						expect(sc.services[0].lifetime).toBe(ServiceLifeTime.transient);
 						expect(sc.services[0].dependencies).toHaveLength(0);
+					});
+				});
+				describe('by_factory', () => {
+					it('should_register_service_by_factory', () => {
+						// Arrange
+						const sc = new ServiceCollection();
+
+						// Act
+						sc.add('my-service', (p: IServiceProvider) => p.get('my-service2'), ServiceLifeTime.transient);
+
+						// Assertion
+						expect(sc.services).toHaveLength(1);
+						expect(sc.services[0].token).toBe('my-service');
+						expect(sc.services[0].lifetime).toBe(ServiceLifeTime.transient);
+						expect(sc.services[0].dependencies).toHaveLength(1);
+						expect(sc.services[0].dependencies[0].token).toBe(SERVICE_PROVIDER_INJECTION_TOKEN);
+						expect(sc.services[0].dependencies[0].isMulti).toBe(false);
+						expect(sc.services[0].dependencies[0].isOptional).toBe(false);
 					});
 				});
 			});
@@ -312,6 +332,32 @@ describe('dependency-injection', () => {
 							expect(descriptor.dependencies[0].isOptional).toBe(true);
 						});
 					});
+				});
+			});
+			describe('getDescriptorByFactory', () => {
+				it('should_return_by_factory', () => {
+					// Arrange
+					const sc = new ServiceCollection();
+
+					// Act
+					const descriptor = sc.getDescriptorByFactory(
+						'my-service',
+						(p) => p.get('dependency'),
+						ServiceLifeTime.transient,
+					);
+
+					// Assertion
+					expect(descriptor.dependencies).toHaveLength(1);
+					expect(descriptor.dependencies[0].token).toBe(SERVICE_PROVIDER_INJECTION_TOKEN);
+					expect(descriptor.dependencies[0].isMulti).toBe(false);
+					expect(descriptor.dependencies[0].isOptional).toBe(false);
+					expect(descriptor.lifetime).toBe(ServiceLifeTime.transient);
+					expect(descriptor.token).toBe('my-service');
+					const factoryAction = () =>
+						descriptor.factory({
+							get: async (name: string) => 'value',
+						});
+					expect(factoryAction()).resolves.toBe('value');
 				});
 			});
 		});
