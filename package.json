@@ -43,6 +43,6 @@
 		"typescript": "^3.8.3"
 	},
 	"dependencies": {
-		"@sarina/annotation": "^1.0.0-pre"
+		"@sarina/annotation": "^1.0.3-pre"
 	}
 }

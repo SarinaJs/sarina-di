@@ -383,10 +383,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
-"@sarina/annotation@^1.0.0-pre":
-  version "1.0.0-pre"
-  resolved "https://registry.yarnpkg.com/@sarina/annotation/-/annotation-1.0.0-pre.tgz#aff72b1f8a51adcfad4e8003ad84401cf18329f1"
-  integrity sha512-IYH49VLOxRlHnXprbCa6tJ9bWd2lVThyEll8KOb+IxKV5/SAHn1gq0W+QiEHxJ4V0WlsxWhYUV2F8h8tSdkpWg==
+"@sarina/annotation@^1.0.3-pre":
+  version "1.0.3-pre"
+  resolved "https://registry.yarnpkg.com/@sarina/annotation/-/annotation-1.0.3-pre.tgz#b9c49b56288b7a4a17df40aa6fccecec92e0cf51"
+  integrity sha512-AK/gdErlwg5YsTboToc/p0EhCQlFem9Ioqk1fWp26Sh7DMBfxuNnIITxt7RDs8XpeKPmtV4uEfhcCzC25+jlrQ==
 
 "@sinonjs/commons@^1.7.0":
   version "1.7.1"

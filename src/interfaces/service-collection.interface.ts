@@ -1,9 +1,11 @@
+import { Type } from './type';
 import { Token } from './token';
 import { IServiceProvider } from './service-provider.interface';
-import { ServiceDescriptor } from './service-descriptor.model';
+import { ServiceDescriptor, ServiceLifeTime } from './service-descriptor.model';
 
 export interface IServiceCollection {
 	has(token: Token): boolean;
 	add(service: ServiceDescriptor): IServiceCollection;
+	add(type: Type<any>, lifetime: ServiceLifeTime): IServiceCollection;
 	build(): Promise<IServiceProvider>;
 }
