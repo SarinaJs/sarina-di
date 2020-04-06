@@ -9,8 +9,8 @@ export interface IServiceCollection {
 	add(type: Type<any>, lifetime: ServiceLifeTime): IServiceCollection;
 	add<TService = any>(
 		token: Token<any>,
-		factory: (provider: IServiceProvider) => Promise<TService>,
 		lifetime: ServiceLifeTime,
+		factory: (provider: IServiceProvider) => Promise<TService>,
 	): IServiceCollection;
 	build(): Promise<IServiceProvider>;
 }

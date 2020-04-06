@@ -116,7 +116,7 @@ describe('dependency-injection', () => {
 						const sc = new ServiceCollection();
 
 						// Act
-						sc.add('my-service', (p: IServiceProvider) => p.get('my-service2'), ServiceLifeTime.transient);
+						sc.add('my-service', ServiceLifeTime.transient, (p: IServiceProvider) => p.get('my-service2'));
 
 						// Assertion
 						expect(sc.services).toHaveLength(1);
@@ -342,8 +342,8 @@ describe('dependency-injection', () => {
 					// Act
 					const descriptor = sc.getDescriptorByFactory(
 						'my-service',
-						(p) => p.get('dependency'),
 						ServiceLifeTime.transient,
+						(p) => p.get('dependency'),
 					);
 
 					// Assertion

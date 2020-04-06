@@ -21,8 +21,8 @@ export class ServiceCollection implements IServiceCollection {
 	public add(service: ServiceDescriptor): IServiceCollection;
 	public add<TService = any>(
 		token: Token<any>,
-		factory: (provider: IServiceProvider) => Promise<TService>,
 		lifetime: ServiceLifeTime,
+		factory: (provider: IServiceProvider) => Promise<TService>,
 	): IServiceCollection;
 	public add(...args: any[]) {
 		if (args.length == 0) return this;
@@ -79,8 +79,8 @@ export class ServiceCollection implements IServiceCollection {
 	}
 	public getDescriptorByFactory<T>(
 		token: Token,
-		factory: (provider: IServiceProvider) => Promise<T>,
 		lifetime: ServiceLifeTime,
+		factory: (provider: IServiceProvider) => Promise<T>,
 	): ServiceDescriptor {
 		return {
 			dependencies: [
