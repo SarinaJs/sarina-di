@@ -6,8 +6,9 @@ import { ServiceDescriptor, ServiceLifeTime } from './service-descriptor.model';
 export interface IServiceCollection {
 	has(token: Token): boolean;
 	add(service: ServiceDescriptor): IServiceCollection;
-	add(type: Type<any>, lifetime: ServiceLifeTime): IServiceCollection;
-	add<TService = any>(
+	addClass(type: Type<any>, lifetime: ServiceLifeTime);
+	addClass(token: Token, type: Type<any>, lifetime: ServiceLifeTime);
+	addFactory<TService = any>(
 		token: Token<any>,
 		lifetime: ServiceLifeTime,
 		factory: (provider: IServiceProvider) => Promise<TService>,

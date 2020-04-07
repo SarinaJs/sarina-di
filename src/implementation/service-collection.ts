@@ -17,34 +17,24 @@ export class ServiceCollection implements IServiceCollection {
 		return this.services.findIndex((s) => s.token == token) >= 0;
 	}
 
-	public add(type: Type<any>, lifetime: ServiceLifeTime): IServiceCollection;
-	public add(service: ServiceDescriptor): IServiceCollection;
-	public add<TService = any>(
-		token: Token<any>,
-		lifetime: ServiceLifeTime,
-		factory: (provider: IServiceProvider) => Promise<TService>,
-	): IServiceCollection;
-	public add(...args: any[]) {
-		if (args.length == 0) return this;
-		if (args.length == 1) {
-			this.services.push(args[0]);
-		}
-		if (args.length == 2 && isType(args[0])) {
-			this.services.push(this.getDescriptorByType(args[0], args[1]));
-		}
-		if (args.length == 3) {
-			this.services.push(this.getDescriptorByFactory(args[0], args[1], args[2]));
-		}
-
+	public add(service: ServiceDescriptor): IServiceCollection {
+		this.services.push(service);
 		return this;
 	}
+	public addClass(token: Token, type: Type<any>, lifetime: ServiceLifeTime);
+	public addClass(type: Type<any>, lifetime: ServiceLifeTime);
+	public addClass(...args: any[]): IServiceCollection {
+		let type: Type<any> = args[0];
+		let token: Type<any> = args[0];
+		let lifetime = ServiceLifeTime.transient;
+		if (args.length == 2) {
+			type = args[0];
+			lifetime = args[1];
+		} else {
+			type = args[1];
+			lifetime = args[2];
+		}
 
-	public async build(): Promise<IServiceProvider> {
-		const resolver = new ServiceResolver(this.services);
-		return new ServiceProvider(resolver);
-	}
-
-	public getDescriptorByType(type: Type<any>, lifetime: ServiceLifeTime): ServiceDescriptor {
 		// check that type has defined annotation
 		const injectableAnnotation = isInjectable(type);
 		if (!injectableAnnotation) throw new Error('Type not marked as Injectable');
@@ -69,20 +59,21 @@ export class ServiceCollection implements IServiceCollection {
 			return { token: theToken, isMulti: isMultiple, isOptional: isOptional };
 		});
 
-		// return descrptor
-		return {
+		const descriptor = {
 			dependencies: dependencies,
 			factory: (...args: any[]) => new type(...args),
 			lifetime: lifetime,
 			token: type,
 		};
+
+		return this.add(descriptor);
 	}
-	public getDescriptorByFactory<T>(
-		token: Token,
+	public addFactory<TService>(
+		token: Token<any>,
 		lifetime: ServiceLifeTime,
-		factory: (provider: IServiceProvider) => Promise<T>,
-	): ServiceDescriptor {
-		return {
+		factory: (provider: IServiceProvider) => Promise<TService>,
+	): IServiceCollection {
+		const descriptor = {
 			dependencies: [
 				{
 					token: SERVICE_PROVIDER_INJECTION_TOKEN,
@@ -94,5 +85,11 @@ export class ServiceCollection implements IServiceCollection {
 			lifetime: lifetime,
 			token: token,
 		};
+		return this.add(descriptor);
+	}
+
+	public async build(): Promise<IServiceProvider> {
+		const resolver = new ServiceResolver(this.services);
+		return new ServiceProvider(resolver);
 	}
 }
