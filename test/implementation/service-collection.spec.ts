@@ -133,7 +133,7 @@ describe('dependency-injection', () => {
 					const descriptor = sc.services[0];
 					expect(descriptor.token).toBe(SampleType);
 				});
-				it('factory_should_return_instance_of_type', () => {
+				it('factory_should_return_instance_of_type', async () => {
 					// Arrange
 					const sc = new ServiceCollection();
 					@injectable()
@@ -144,9 +144,9 @@ describe('dependency-injection', () => {
 
 					// Assertion
 					const descriptor = sc.services[0];
-					expect(descriptor.factory()).toBeInstanceOf(SampleType);
+					expect(await descriptor.factory()).toBeInstanceOf(SampleType);
 				});
-				it('should_add_by_provided_type', () => {
+				it('should_add_by_provided_type', async () => {
 					// Arrange
 					const sc = new ServiceCollection();
 					@injectable()
@@ -159,7 +159,7 @@ describe('dependency-injection', () => {
 					const descriptor = sc.services[0];
 					expect(descriptor.lifetime).toBe(ServiceLifeTime.transient);
 					expect(descriptor.token).toBe('my-token');
-					expect(descriptor.factory()).toBeInstanceOf(SampleType);
+					expect(await descriptor.factory()).toBeInstanceOf(SampleType);
 				});
 				describe('dependencies', () => {
 					it('should_registry_emptyArray_for_parameterless_type', () => {
@@ -319,6 +319,22 @@ describe('dependency-injection', () => {
 					expect(sc.services[0].dependencies[0].token).toBe(SERVICE_PROVIDER_INJECTION_TOKEN);
 					expect(sc.services[0].dependencies[0].isMulti).toBe(false);
 					expect(sc.services[0].dependencies[0].isOptional).toBe(false);
+				});
+			});
+			describe('addValue', () => {
+				it('should_regsiter_service_byValue', async () => {
+					// Arrange
+					const sc = new ServiceCollection();
+
+					// Act
+					sc.addValue('my-service', ServiceLifeTime.transient, 'my-value');
+
+					// Assertion
+					expect(sc.services).toHaveLength(1);
+					expect(sc.services[0].token).toBe('my-service');
+					expect(sc.services[0].lifetime).toBe(ServiceLifeTime.transient);
+					expect(sc.services[0].dependencies).toHaveLength(0);
+					expect(await sc.services[0].factory()).toBe('my-value');
 				});
 			});
 

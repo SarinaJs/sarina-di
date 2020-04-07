@@ -24,8 +24,8 @@ export class ServiceCollection implements IServiceCollection {
 	public addClass(token: Token, type: Type<any>, lifetime: ServiceLifeTime);
 	public addClass(type: Type<any>, lifetime: ServiceLifeTime);
 	public addClass(...args: any[]): IServiceCollection {
+		const token: Type<any> = args[0];
 		let type: Type<any> = args[0];
-		let token: Type<any> = args[0];
 		let lifetime = ServiceLifeTime.transient;
 		if (args.length == 2) {
 			type = args[0];
@@ -63,7 +63,7 @@ export class ServiceCollection implements IServiceCollection {
 			dependencies: dependencies,
 			factory: (...args: any[]) => new type(...args),
 			lifetime: lifetime,
-			token: type,
+			token: token,
 		};
 
 		return this.add(descriptor);
@@ -86,6 +86,14 @@ export class ServiceCollection implements IServiceCollection {
 			token: token,
 		};
 		return this.add(descriptor);
+	}
+	public addValue<T>(token: Token, lifetime: ServiceLifeTime, value: T) {
+		return this.add({
+			dependencies: [],
+			factory: async () => value,
+			lifetime: lifetime,
+			token: token,
+		});
 	}
 
 	public async build(): Promise<IServiceProvider> {

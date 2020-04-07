@@ -13,5 +13,6 @@ export interface IServiceCollection {
 		lifetime: ServiceLifeTime,
 		factory: (provider: IServiceProvider) => Promise<TService>,
 	): IServiceCollection;
+	addValue<T>(token: Type<any>, lifetime: ServiceLifeTime, value: T);
 	build(): Promise<IServiceProvider>;
 }
