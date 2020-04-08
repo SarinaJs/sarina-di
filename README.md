@@ -67,7 +67,7 @@ Sarina-Di performs `constructor` injection on the constructors of decorated clas
 ## Decorators
 
 ### injectable()
-Class decorator factory that allows the class' dependencies to be injected at runtime.
+Class decorator factory that allows the class dependencies to be injected at runtime.
 
 #### Usage
 ```ts
