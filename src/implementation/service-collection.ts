@@ -87,11 +87,11 @@ export class ServiceCollection implements IServiceCollection {
 		};
 		return this.add(descriptor);
 	}
-	public addValue<T>(token: Token, lifetime: ServiceLifeTime, value: T): IServiceCollection {
+	public addValue<T>(token: Token, value: T): IServiceCollection {
 		return this.add({
 			dependencies: [],
 			factory: async () => value,
-			lifetime: lifetime,
+			lifetime: ServiceLifeTime.singleton,
 			token: token,
 		});
 	}
@@ -131,16 +131,6 @@ export class ServiceCollection implements IServiceCollection {
 		factory: (provider: IServiceProvider) => Promise<TService>,
 	): IServiceCollection {
 		return this.addFactory(token, ServiceLifeTime.scoped, factory);
-	}
-
-	public addTransientValue<T>(token: Type<any>, value: T): IServiceCollection {
-		return this.addValue(token, ServiceLifeTime.transient, value);
-	}
-	public addSingletonValue<T>(token: Type<any>, value: T): IServiceCollection {
-		return this.addValue(token, ServiceLifeTime.singleton, value);
-	}
-	public addScopedValue<T>(token: Type<any>, value: T): IServiceCollection {
-		return this.addValue(token, ServiceLifeTime.scoped, value);
 	}
 
 	public async build(): Promise<IServiceProvider> {

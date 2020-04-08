@@ -34,10 +34,7 @@ export interface IServiceCollection {
 		factory: (provider: IServiceProvider) => Promise<TService>,
 	): IServiceCollection;
 
-	addValue<T>(token: Type<any>, lifetime: ServiceLifeTime, value: T): IServiceCollection;
-	addTransientValue<T>(token: Type<any>, value: T): IServiceCollection;
-	addSingletonValue<T>(token: Type<any>, value: T): IServiceCollection;
-	addScopedValue<T>(token: Type<any>, value: T): IServiceCollection;
+	addValue<T>(token: Type<any>, value: T): IServiceCollection;
 
 	build(): Promise<IServiceProvider>;
 }

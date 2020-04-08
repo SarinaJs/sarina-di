@@ -402,38 +402,14 @@ describe('dependency-injection', () => {
 					const sc = new ServiceCollection();
 
 					// Act
-					sc.addValue('my-service', ServiceLifeTime.transient, 'my-value');
+					sc.addValue('my-service', 'my-value');
 
 					// Assertion
 					expect(sc.services).toHaveLength(1);
 					expect(sc.services[0].token).toBe('my-service');
-					expect(sc.services[0].lifetime).toBe(ServiceLifeTime.transient);
+					expect(sc.services[0].lifetime).toBe(ServiceLifeTime.singleton);
 					expect(sc.services[0].dependencies).toHaveLength(0);
 					expect(await sc.services[0].factory()).toBe('my-value');
-				});
-				describe('overloads', () => {
-					theoretically(
-						(data) => `should_add_as_${data.lifetime}`,
-						[
-							{ lifetime: ServiceLifeTime.transient, func: 'Transient' },
-							{ lifetime: ServiceLifeTime.scoped, func: 'Scoped' },
-							{ lifetime: ServiceLifeTime.singleton, func: 'Singleton' },
-						],
-						async (data) => {
-							// Arrange
-							const sc = new ServiceCollection();
-
-							// Act
-							sc[`add${data.func}Value`]('token', 'value');
-
-							// Assertion
-							expect(sc.services).toHaveLength(1);
-							expect(sc.services[0].token).toBe('token');
-							expect(sc.services[0].lifetime).toBe(data.lifetime);
-							expect(sc.services[0].dependencies).toHaveLength(0);
-							expect(await sc.services[0].factory()).toBe('value');
-						},
-					);
 				});
 			});
 
