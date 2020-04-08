@@ -1,4 +1,5 @@
-# Sarina-DI
+Sarina-DI
+=========
 
 A dependency injection for Typescript.
 
@@ -80,7 +81,6 @@ class MyService {
 
 ```
 
-
 ### inject()
 Parameter decorator factory that allows for interface and other non-class information to be stored in the constructor's metadata.
 
@@ -116,7 +116,6 @@ class MyService {
 ### multiple()
 Parameter decorator for array parameters where the array contents will come from the provider. It will inject an array using the specified injection token to resolve the values.
 
-
 #### Usage
 ```ts
 import { multiple } from '@sarina/di';
@@ -142,7 +141,6 @@ export type Token<T = any> = Type<T> | string | symbol;
 const myToken='my-token';
 const myToken2=Symbol('my-Token');
 const myToken=class MyService{}
-
 ```
 
 ### Providers
@@ -266,14 +264,11 @@ const values:string[] = serviceProvider.getAll(VALUES_TOKEN);
 
 The `sarina-di` allows you to define 3 type of lifetime:
 
-- **singleton**:
-  Any `singleton` services will be instantied per `IServiceProvider` and will shared across all other providers.
+  - **singleton**: Any `singleton` services will be instantied per `IServiceProvider` and will shared across all other providers.
 
-- **scoped**:
-  Any `scoped` service will be instantied per `ScopedProvider`.
+  - **scoped**: Any `scoped` service will be instantied per `ScopedProvider`.
 
-- **transient**:
-  Any `transient` service will be instantied per `resolution` request.
+  - **transient**: Any `transient` service will be instantied per `resolution` request.
 
 
 In order to create a scoped provider, you can use `createScope` of `IServiceProvider` instance.
@@ -283,11 +278,5 @@ const serviceProvider : IServiceProvider = ...
 const scopedProvider = serviceProvider.createScope();
 ```
 
-
 # How to contribute
 Just fork the project, make your changes send us a PR.
-
-
-
-
-
