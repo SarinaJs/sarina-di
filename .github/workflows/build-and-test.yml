@@ -21,5 +21,5 @@ jobs:
       - name: Codecov
         uses: codecov/codecov-action@v1.0.6
         with:
-          file: test_result/coverage-final.json
+          file: test_result/coverage/coverage-final.json
           uses: codecov/codecov-action@v1.0.6
