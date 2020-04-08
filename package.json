@@ -1,7 +1,19 @@
 {
-	"name": "sarina-js",
-	"version": "1.0.0",
+	"name": "@sarina/di",
+	"version": "1.0.0-pre",
 	"description": "Simple dependency injection",
+	"keywords": [
+		"Sarina",
+		"SarinaJs",
+		"di",
+		"ioc",
+		"dependency injection",
+		"inversion of control",
+		"injection",
+		"service locator",
+		"typescript",
+		"dependency"
+	],
 	"homepage": "https://github.com/SarinaJs/sarina-di",
 	"repository": {
 		"type": "git",
@@ -10,7 +22,9 @@
 	"license": "MIT",
 	"author": "Ivan Parvareshi Hamrah",
 	"scripts": {
+		"build": "tsc --project tsconfig.build.json",
 		"test": "jest --coverage --env=jsdom",
+		"test:watch": "jest --coverage --env=jsdom --watch",
 		"tsc": "tsc"
 	},
 	"engines": {
@@ -26,7 +40,12 @@
 		"eslint-plugin-prettier": "^3.1.2",
 		"jest": "25.1.0",
 		"prettier": "^1.19.1",
+		"reflect-metadata": "^0.1.13",
 		"ts-jest": "^25.2.1",
 		"typescript": "^3.8.3"
+	},
+	"dependencies": {
+		"@sarina/annotation": "^1.0.3-pre",
+		"jest-theories": "^1.2.0"
 	}
 }

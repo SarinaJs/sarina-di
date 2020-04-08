@@ -383,6 +383,11 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
+"@sarina/annotation@^1.0.3-pre":
+  version "1.0.3-pre"
+  resolved "https://registry.yarnpkg.com/@sarina/annotation/-/annotation-1.0.3-pre.tgz#b9c49b56288b7a4a17df40aa6fccecec92e0cf51"
+  integrity sha512-AK/gdErlwg5YsTboToc/p0EhCQlFem9Ioqk1fWp26Sh7DMBfxuNnIITxt7RDs8XpeKPmtV4uEfhcCzC25+jlrQ==
+
 "@sinonjs/commons@^1.7.0":
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.7.1.tgz#da5fd19a5f71177a53778073978873964f49acf1"
@@ -2342,6 +2347,13 @@ jest-snapshot@^25.1.0:
     pretty-format "^25.1.0"
     semver "^7.1.1"
 
+jest-theories@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/jest-theories/-/jest-theories-1.2.0.tgz#e5a3c405fca671a1cead02203a5752419530d3bc"
+  integrity sha512-jmNtgcwmhGFxJlVOge2VLmrbm+Bfu0x6D3GzC9nHFMdZEOJOnZPUa9S7XbB3oq/a7M777bfmYiOCC/93+GdWrw==
+  dependencies:
+    string-format "^2.0.0"
+
 jest-util@^25.1.0:
   version "25.1.0"
   resolved "https://registry.yarnpkg.com/jest-util/-/jest-util-25.1.0.tgz#7bc56f7b2abd534910e9fa252692f50624c897d9"
@@ -3029,6 +3041,11 @@ realpath-native@^1.1.0:
   dependencies:
     util.promisify "^1.0.0"
 
+reflect-metadata@^0.1.13:
+  version "0.1.13"
+  resolved "https://registry.yarnpkg.com/reflect-metadata/-/reflect-metadata-0.1.13.tgz#67ae3ca57c972a2aa1642b10fe363fe32d49dc08"
+  integrity sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==
+
 regex-not@^1.0.0, regex-not@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/regex-not/-/regex-not-1.0.2.tgz#1f4ece27e00b0b65e0247a6810e6a85d83a5752c"
@@ -3434,6 +3451,11 @@ stealthy-require@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
   integrity sha1-NbCYdbT/SfJqd35QmzCQoyJr8ks=
+
+string-format@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/string-format/-/string-format-2.0.0.tgz#f2df2e7097440d3b65de31b6d40d54c96eaffb9b"
+  integrity sha512-bbEs3scLeYNXLecRRuk6uJxdXUSj6le/8rNPHChIJTn2V79aXVTR1EH2OH5zLKKoz0V02fOUKZZcw01pLUShZA==
 
 string-length@^3.1.0:
   version "3.1.0"

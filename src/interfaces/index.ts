@@ -1,5 +1,6 @@
+export * from './token';
+export * from './type';
 export * from './service-collection.interface';
-export * from './service-container.interface';
-export * from './service-descriptor.interface';
-export * from './service-lifetime.enum';
-export * from './token.type';
+export * from './service-provider.interface';
+export * from './service-descriptor.model';
+

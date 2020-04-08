@@ -1,5 +1,5 @@
 module.exports = {
-	name: 'sarina',
+	name: 'sarina-reflect',
 	verbose: true,
 	moduleFileExtensions: ['js', 'json', 'ts'],
 	rootDir: '.',
@@ -11,7 +11,7 @@ module.exports = {
 	coverageDirectory: 'test_result/coverage',
 	testEnvironment: 'node',
 	moduleNameMapper: {
-		'@sarina/di': '<rootDir>/src/index.ts',
 		'@sarina/di/(.*)': '<rootDir>/src/$1',
+		'@sarina/di': '<rootDir>/src/index.ts',
 	},
 };
