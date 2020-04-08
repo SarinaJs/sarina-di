@@ -1,3 +1,4 @@
+import theoretically from 'jest-theories';
 import {
 	ServiceCollection,
 	ServiceLifeTime,
@@ -302,6 +303,56 @@ describe('dependency-injection', () => {
 						});
 					});
 				});
+				describe('overloads', () => {
+					theoretically(
+						(data) => `should_add_as_${data.lifetime}_type_as_token`,
+						[
+							{ lifetime: ServiceLifeTime.transient, func: 'Transient' },
+							{ lifetime: ServiceLifeTime.scoped, func: 'Scoped' },
+							{ lifetime: ServiceLifeTime.singleton, func: 'Singleton' },
+						],
+						async (data) => {
+							// Arrange
+							const sc = new ServiceCollection();
+							@injectable()
+							class SampleType {}
+
+							// Act
+							const descriptor = sc[`add${data.func}Class`](SampleType);
+
+							// Assertion
+							expect(sc.services).toHaveLength(1);
+							expect(sc.services[0].token).toBe(SampleType);
+							expect(sc.services[0].lifetime).toBe(data.lifetime);
+							expect(sc.services[0].dependencies).toHaveLength(0);
+							expect(await sc.services[0].factory()).toBeInstanceOf(SampleType);
+						},
+					);
+					theoretically(
+						(data) => `should_add_as_${data.lifetime}_by_custom_token`,
+						[
+							{ lifetime: ServiceLifeTime.transient, func: 'Transient' },
+							{ lifetime: ServiceLifeTime.scoped, func: 'Scoped' },
+							{ lifetime: ServiceLifeTime.singleton, func: 'Singleton' },
+						],
+						async (data) => {
+							// Arrange
+							const sc = new ServiceCollection();
+							@injectable()
+							class SampleType {}
+
+							// Act
+							const descriptor = sc[`add${data.func}Class`]('token', SampleType);
+
+							// Assertion
+							expect(sc.services).toHaveLength(1);
+							expect(sc.services[0].token).toBe('token');
+							expect(sc.services[0].lifetime).toBe(data.lifetime);
+							expect(sc.services[0].dependencies).toHaveLength(0);
+							expect(await sc.services[0].factory()).toBeInstanceOf(SampleType);
+						},
+					);
+				});
 			});
 			describe('addFactory', () => {
 				it('should_register_service_by_factory', () => {
@@ -320,6 +371,30 @@ describe('dependency-injection', () => {
 					expect(sc.services[0].dependencies[0].isMulti).toBe(false);
 					expect(sc.services[0].dependencies[0].isOptional).toBe(false);
 				});
+				describe('overloads', () => {
+					theoretically(
+						(data) => `should_add_as_${data.lifetime}`,
+						[
+							{ lifetime: ServiceLifeTime.transient, func: 'Transient' },
+							{ lifetime: ServiceLifeTime.scoped, func: 'Scoped' },
+							{ lifetime: ServiceLifeTime.singleton, func: 'Singleton' },
+						],
+						async (data) => {
+							// Arrange
+							const sc = new ServiceCollection();
+
+							// Act
+							sc[`add${data.func}Factory`]('token', async () => 'value');
+
+							// Assertion
+							expect(sc.services).toHaveLength(1);
+							expect(sc.services[0].token).toBe('token');
+							expect(sc.services[0].lifetime).toBe(data.lifetime);
+							expect(sc.services[0].dependencies).toHaveLength(1);
+							expect(await sc.services[0].factory()).toBe('value');
+						},
+					);
+				});
 			});
 			describe('addValue', () => {
 				it('should_regsiter_service_byValue', async () => {
@@ -335,6 +410,30 @@ describe('dependency-injection', () => {
 					expect(sc.services[0].lifetime).toBe(ServiceLifeTime.transient);
 					expect(sc.services[0].dependencies).toHaveLength(0);
 					expect(await sc.services[0].factory()).toBe('my-value');
+				});
+				describe('overloads', () => {
+					theoretically(
+						(data) => `should_add_as_${data.lifetime}`,
+						[
+							{ lifetime: ServiceLifeTime.transient, func: 'Transient' },
+							{ lifetime: ServiceLifeTime.scoped, func: 'Scoped' },
+							{ lifetime: ServiceLifeTime.singleton, func: 'Singleton' },
+						],
+						async (data) => {
+							// Arrange
+							const sc = new ServiceCollection();
+
+							// Act
+							sc[`add${data.func}Value`]('token', 'value');
+
+							// Assertion
+							expect(sc.services).toHaveLength(1);
+							expect(sc.services[0].token).toBe('token');
+							expect(sc.services[0].lifetime).toBe(data.lifetime);
+							expect(sc.services[0].dependencies).toHaveLength(0);
+							expect(await sc.services[0].factory()).toBe('value');
+						},
+					);
 				});
 			});
 

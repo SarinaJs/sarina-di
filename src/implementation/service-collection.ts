@@ -21,8 +21,8 @@ export class ServiceCollection implements IServiceCollection {
 		this.services.push(service);
 		return this;
 	}
-	public addClass(token: Token, type: Type<any>, lifetime: ServiceLifeTime);
-	public addClass(type: Type<any>, lifetime: ServiceLifeTime);
+	public addClass(token: Token, type: Type<any>, lifetime: ServiceLifeTime): IServiceCollection;
+	public addClass(type: Type<any>, lifetime: ServiceLifeTime): IServiceCollection;
 	public addClass(...args: any[]): IServiceCollection {
 		const token: Type<any> = args[0];
 		let type: Type<any> = args[0];
@@ -87,13 +87,60 @@ export class ServiceCollection implements IServiceCollection {
 		};
 		return this.add(descriptor);
 	}
-	public addValue<T>(token: Token, lifetime: ServiceLifeTime, value: T) {
+	public addValue<T>(token: Token, lifetime: ServiceLifeTime, value: T): IServiceCollection {
 		return this.add({
 			dependencies: [],
 			factory: async () => value,
 			lifetime: lifetime,
 			token: token,
 		});
+	}
+
+	public addTransientClass(token: Token, type: Type<any>): IServiceCollection;
+	public addTransientClass(type: Type<any>): IServiceCollection;
+	public addTransientClass(...args: any[]): IServiceCollection {
+		return this.addClass.apply(this, [...args, ServiceLifeTime.transient]);
+	}
+
+	public addSingletonClass(token: Token, type: Type<any>): IServiceCollection;
+	public addSingletonClass(type: Type<any>): IServiceCollection;
+	public addSingletonClass(...args: any[]): IServiceCollection {
+		return this.addClass.apply(this, [...args, ServiceLifeTime.singleton]);
+	}
+
+	public addScopedClass(token: Token, type: Type<any>): IServiceCollection;
+	public addScopedClass(type: Type<any>): IServiceCollection;
+	public addScopedClass(...args: any[]): IServiceCollection {
+		return this.addClass.apply(this, [...args, ServiceLifeTime.scoped]);
+	}
+
+	public addTransientFactory<TService = any>(
+		token: Token<any>,
+		factory: (provider: IServiceProvider) => Promise<TService>,
+	): IServiceCollection {
+		return this.addFactory(token, ServiceLifeTime.transient, factory);
+	}
+	public addSingletonFactory<TService = any>(
+		token: Token<any>,
+		factory: (provider: IServiceProvider) => Promise<TService>,
+	): IServiceCollection {
+		return this.addFactory(token, ServiceLifeTime.singleton, factory);
+	}
+	public addScopedFactory<TService = any>(
+		token: Token<any>,
+		factory: (provider: IServiceProvider) => Promise<TService>,
+	): IServiceCollection {
+		return this.addFactory(token, ServiceLifeTime.scoped, factory);
+	}
+
+	public addTransientValue<T>(token: Type<any>, value: T): IServiceCollection {
+		return this.addValue(token, ServiceLifeTime.transient, value);
+	}
+	public addSingletonValue<T>(token: Type<any>, value: T): IServiceCollection {
+		return this.addValue(token, ServiceLifeTime.singleton, value);
+	}
+	public addScopedValue<T>(token: Type<any>, value: T): IServiceCollection {
+		return this.addValue(token, ServiceLifeTime.scoped, value);
 	}
 
 	public async build(): Promise<IServiceProvider> {
