@@ -18,8 +18,3 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn run build
       - run: yarn run test
-      - name: Codecov
-        uses: codecov/codecov-action@v1.0.6
-        with:
-          file: test_result/coverage/coverage-final.json
-          uses: codecov/codecov-action@v1.0.6
