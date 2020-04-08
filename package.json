@@ -22,7 +22,9 @@
 	"license": "MIT",
 	"author": "Ivan Parvareshi Hamrah",
 	"scripts": {
+		"build": "tsc --project tsconfig.build.json",
 		"test": "jest --coverage --env=jsdom",
+		"test:watch": "jest --coverage --env=jsdom --watch",
 		"tsc": "tsc"
 	},
 	"engines": {
