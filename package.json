@@ -1,6 +1,6 @@
 {
 	"name": "@sarina/di",
-	"version": "1.0.0-pre",
+	"version": "1.0.1-pre",
 	"description": "Simple dependency injection",
 	"keywords": [
 		"Sarina",
