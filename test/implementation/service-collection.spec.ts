@@ -433,7 +433,7 @@ describe('dependency-injection', () => {
 					// Assert
 					expect(serviceProvider).toBeInstanceOf(ServiceProvider);
 					expect(serviceProvider.parent).toBeNull();
-					expect(services.size).toBe(1);
+					expect(services.get('token')).toContain(descriptor);
 				});
 			});
 		});

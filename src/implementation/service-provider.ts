@@ -1,5 +1,5 @@
 import { Token } from '../interfaces/token';
-import { IServiceProvider } from './../interfaces/service-provider.interface';
+import { IServiceProvider, SERVICE_PROVIDER_INJECTION_TOKEN } from './../interfaces/service-provider.interface';
 import { ServiceDescriptor, ServiceDependency, ServiceLifeTime } from '../interfaces/service-descriptor.model';
 import { ServiceResolver } from './service-resolver';
 
@@ -34,7 +34,17 @@ export class ResolutionContext {
 
 export class ServiceProvider implements IServiceProvider {
 	public static createRootProvider(resolver: ServiceResolver): ServiceProvider {
-		return new ServiceProvider(resolver);
+		const provider = new ServiceProvider(resolver);
+
+		// we need to register IServiceProvider as service-provider
+		resolver.internalAddNewService({
+			lifetime: ServiceLifeTime.singleton,
+			token: SERVICE_PROVIDER_INJECTION_TOKEN,
+			dependencies: [],
+			factory: async () => provider,
+		});
+
+		return provider;
 	}
 
 	public readonly parent: ServiceProvider;

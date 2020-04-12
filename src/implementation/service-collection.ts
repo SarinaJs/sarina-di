@@ -134,7 +134,7 @@ export class ServiceCollection implements IServiceCollection {
 	}
 
 	public async build(): Promise<IServiceProvider> {
-		const resolver = new ServiceResolver(this.services);
+		const resolver = new ServiceResolver([...this.services]);
 		return new ServiceProvider(resolver);
 	}
 }
