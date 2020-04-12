@@ -44,13 +44,13 @@
 		"eslint-config-prettier": "^6.10.0",
 		"eslint-plugin-prettier": "^3.1.2",
 		"jest": "25.1.0",
+		"jest-theories": "^1.2.0",
 		"prettier": "^1.19.1",
 		"reflect-metadata": "^0.1.13",
 		"ts-jest": "^25.2.1",
-		"jest-theories": "^1.2.0",
 		"typescript": "^3.8.3"
 	},
 	"dependencies": {
-		"@sarina/annotation": "^1.0.3-pre"
+		"@sarina/annotation": "^1.0.3-pre01"
 	}
 }
