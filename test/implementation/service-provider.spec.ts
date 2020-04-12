@@ -1,10 +1,10 @@
 import {
-	Token,
 	ServiceResolver,
 	ServiceProvider,
 	ServiceDescriptor,
 	ServiceLifeTime,
 	ResolutionContext,
+	SERVICE_PROVIDER_INJECTION_TOKEN,
 } from '@sarina/di';
 
 describe('dependency-injection', () => {
@@ -19,6 +19,17 @@ describe('dependency-injection', () => {
 
 					// Assert
 					expect(provider.parent).toBeNull();
+				});
+				it('should_register_selfInstance_as_service', async () => {
+					// Arrange
+
+					// Act
+					const provider = ServiceProvider.createRootProvider(new ServiceResolver([]));
+
+					// Assert
+					expect(provider.resolver.services.size).toBe(1);
+					const resolvedProvider = await provider.get(SERVICE_PROVIDER_INJECTION_TOKEN);
+					expect(resolvedProvider).toBe(provider);
 				});
 			});
 			describe('resolveDependency', () => {

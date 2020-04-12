@@ -20,4 +20,8 @@ export class ServiceResolver implements IServiceResolver {
 	public resolveAll(token: Token): ServiceDescriptor[] {
 		return this.services.get(token) || [];
 	}
+	public internalAddNewService(service: ServiceDescriptor) {
+		if (!this.services.has(service.token)) this.services.set(service.token, []);
+		this.services.get(service.token).push(service);
+	}
 }

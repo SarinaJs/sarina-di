@@ -155,5 +155,56 @@ describe('dependency-injection', () => {
 				expect(descriptors[0].token).toBe('token1');
 			});
 		});
+		describe('internalAddNewService', () => {
+			it('should_addNewService_into_tokens', () => {
+				// Arrange
+				const newService = {
+					dependencies: [],
+					factory: () => null,
+					lifetime: ServiceLifeTime.scoped,
+					token: 'token1',
+				};
+				const resolver = new ServiceResolver([]);
+
+				// Act
+				resolver.internalAddNewService(newService);
+
+				// Assert
+				expect(resolver.services.get('token1')).toMatchObject([newService]);
+			});
+			it('should_addNewService_by_token', () => {
+				// Arrange
+				const services: ServiceDescriptor[] = [
+					{
+						dependencies: [],
+						factory: () => null,
+						lifetime: ServiceLifeTime.scoped,
+						token: 'token1',
+					},
+					{
+						dependencies: [],
+						factory: () => null,
+						lifetime: ServiceLifeTime.scoped,
+						token: 'token1',
+					},
+					{
+						dependencies: [],
+						factory: () => null,
+						lifetime: ServiceLifeTime.scoped,
+						token: 'token2',
+					},
+				];
+				const resolver = new ServiceResolver([]);
+
+				// Act
+				resolver.internalAddNewService(services[0]);
+				resolver.internalAddNewService(services[1]);
+				resolver.internalAddNewService(services[2]);
+
+				// Assert
+				expect(resolver.services.get('token1')).toMatchObject([services[0], services[1]]);
+				expect(resolver.services.get('token2')).toMatchObject([services[2]]);
+			});
+		});
 	});
 });
