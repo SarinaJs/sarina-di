@@ -1,6 +1,9 @@
 Sarina-DI
 =========
 
+![build-and-test](https://github.com/SarinaJs/sarina-di/workflows/build-and-test/badge.svg)
+[![npm version](https://badge.fury.io/js/%40sarina%2Fdi.svg)](https://badge.fury.io/js/%40sarina%2Fdi)
+
 A dependency injection for Typescript.
 
 > The package is part of `@Sarina` framework
