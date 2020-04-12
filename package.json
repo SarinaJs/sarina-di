@@ -1,6 +1,6 @@
 {
 	"name": "@sarina/di",
-	"version": "1.0.0-pre",
+	"version": "1.0.1-pre",
 	"description": "Simple dependency injection",
 	"keywords": [
 		"Sarina",
@@ -30,6 +30,11 @@
 	"engines": {
 		"node": ">= 10.13.0"
 	},
+	"main": "dist/index.js",
+	"files": [
+		"dist",
+		"dist/index.js"
+	],
 	"devDependencies": {
 		"@types/jest": "^25.1.4",
 		"@types/node": "^13.9.2",
