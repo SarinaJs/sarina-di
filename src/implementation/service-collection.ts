@@ -1,8 +1,9 @@
-import { getType } from '@sarina/annotation';
+import { Type } from '../interfaces/type';
 import { Token } from '../interfaces/token';
-import { Type, isType } from '../interfaces/type';
+import { getType } from '@sarina/annotation';
 import { ServiceResolver } from './service-resolver';
 import { ServiceProvider } from './service-provider';
+import { SarinaDependencyInjectionError } from '../errors';
 import { IServiceCollection } from '../interfaces/service-collection.interface';
 import { ServiceDescriptor, ServiceLifeTime } from '../interfaces/service-descriptor.model';
 import { isInjectable, getInjectData, isMultipleParameter, isOptionalParameter } from '../annotations';
@@ -37,7 +38,7 @@ export class ServiceCollection implements IServiceCollection {
 
 		// check that type has defined annotation
 		const injectableAnnotation = isInjectable(type);
-		if (!injectableAnnotation) throw new Error('Type not marked as Injectable');
+		if (!injectableAnnotation) throw SarinaDependencyInjectionError.InvalidInjectableType(type);
 
 		// fetch type information
 		const typeDef = getType(type);
