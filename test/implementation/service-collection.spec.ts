@@ -9,6 +9,7 @@ import {
 	optional,
 	SERVICE_PROVIDER_INJECTION_TOKEN,
 	IServiceProvider,
+	SarinaDependencyInjectionError,
 } from '@sarina/di';
 
 describe('dependency-injection', () => {
@@ -99,6 +100,7 @@ describe('dependency-injection', () => {
 				});
 				it('should_raise_error_if_type_is_not_injectable', () => {
 					// Arrange
+					expect.assertions(2);
 					const sc = new ServiceCollection();
 					class SampleType {}
 
@@ -106,7 +108,13 @@ describe('dependency-injection', () => {
 					const action = () => sc.addClass(SampleType, ServiceLifeTime.transient);
 
 					// Assertion
-					expect(action).toThrow('Type not marked as Injectable');
+					try {
+						action();
+					} catch (e) {
+						const err: SarinaDependencyInjectionError = e;
+						expect(err.code).toBe('x0001');
+						expect(err.name).toBe('InvalidInjectableType');
+					}
 				});
 				it('lifeTime_should_be_equal_to_provided_value', () => {
 					// Arrange
