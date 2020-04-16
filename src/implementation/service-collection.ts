@@ -134,8 +134,8 @@ export class ServiceCollection implements IServiceCollection {
 		return this.addFactory(token, ServiceLifeTime.scoped, factory);
 	}
 
-	public async build(): Promise<IServiceProvider> {
+	public build(): IServiceProvider {
 		const resolver = new ServiceResolver([...this.services]);
-		return new ServiceProvider(resolver);
+		return ServiceProvider.createRootProvider(resolver);
 	}
 }

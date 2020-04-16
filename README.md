@@ -52,7 +52,7 @@ const bootstrap = async () => {
 	serviceContainer.addSingletonClass(MySeccondService);
 
 	// resolving
-	const serviceProvider: IServiceProvider = await serviceContainer.build();
+	const serviceProvider: IServiceProvider = serviceContainer.build();
 	const myService = await serviceProvider.get<MyService>(MyService);
 	const name = myService.getName();
 	console.log(`The name is ${name}`);

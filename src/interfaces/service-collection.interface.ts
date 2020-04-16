@@ -36,5 +36,5 @@ export interface IServiceCollection {
 
 	addValue<T>(token: Type<any>, value: T): IServiceCollection;
 
-	build(): Promise<IServiceProvider>;
+	build(): IServiceProvider;
 }
