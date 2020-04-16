@@ -1,14 +1,69 @@
 import {
-	Token,
 	ServiceResolver,
 	ServiceProvider,
 	ServiceDescriptor,
 	ServiceLifeTime,
 	ResolutionContext,
+	SERVICE_PROVIDER_INJECTION_TOKEN,
+	SarinaDependencyInjectionError,
 } from '@sarina/di';
 
 describe('dependency-injection', () => {
 	describe('service-provider', () => {
+		describe('ResolutionContext', () => {
+			it('create_should_return_ResolutionContext_instance', () => {
+				// Arrange
+
+				// Act
+				const context = ResolutionContext.create('token');
+
+				// Assert
+				expect(context.requestedToken).toBe('token');
+			});
+			it('isActivating_should_return_false_if_not_inList', () => {
+				// Arrange
+				const context = ResolutionContext.create('token');
+
+				// Act
+				const result = context.isActivating('token');
+
+				// Assert
+				expect(result).toBeFalsy();
+			});
+			it('isActivating_should_return_trueif_not_inList', () => {
+				// Arrange
+				const context = ResolutionContext.create('token');
+				context.activatingToken.push('token');
+
+				// Act
+				const result = context.isActivating('token');
+
+				// Assert
+				expect(result).toBeTruthy();
+			});
+			it('markAsActivating_should_register_token_as_activating', () => {
+				// Arrange
+				const context = ResolutionContext.create('token');
+
+				// Act
+				context.markAsActivating('token');
+
+				// Assert
+				expect(context.activatingToken).toHaveLength(1);
+				expect(context.activatingToken[0]).toBe('token');
+			});
+			it('markAsActivated_should_unRegister_token_as_activating', () => {
+				// Arrange
+				const context = ResolutionContext.create('token');
+				context.markAsActivated('token');
+
+				// Act
+				context.markAsActivated('token');
+
+				// Assert
+				expect(context.activatingToken).toHaveLength(0);
+			});
+		});
 		describe('ServiceContainer', () => {
 			describe('createRootProvider', () => {
 				it('should_create_root_service_provider', () => {
@@ -19,6 +74,17 @@ describe('dependency-injection', () => {
 
 					// Assert
 					expect(provider.parent).toBeNull();
+				});
+				it('should_register_selfInstance_as_service', async () => {
+					// Arrange
+
+					// Act
+					const provider = ServiceProvider.createRootProvider(new ServiceResolver([]));
+
+					// Assert
+					expect(provider.resolver.services.size).toBe(1);
+					const resolvedProvider = await provider.get(SERVICE_PROVIDER_INJECTION_TOKEN);
+					expect(resolvedProvider).toBe(provider);
 				});
 			});
 			describe('resolveDependency', () => {
@@ -41,7 +107,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('p1');
 					const result = await provider.resolveDependency(context, { isMulti: true, token: 'p1' });
 
 					// Assert
@@ -62,7 +128,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('p1');
 					const result = await provider.resolveDependency(context, { isMulti: false, token: 'p1' });
 
 					// Assert
@@ -74,7 +140,7 @@ describe('dependency-injection', () => {
 					const rootContainer = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('p1');
 					const result = await rootContainer.resolveDependency(context, {
 						isMulti: false,
 						token: 'p1',
@@ -86,18 +152,26 @@ describe('dependency-injection', () => {
 				});
 				it('should_fail_if_provider_is_single_required_and_not_found', async () => {
 					// Arrange
+					expect.assertions(2);
 					const resolver = new ServiceResolver([]);
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('p1');
 					const action = () => provider.resolveDependency(context, { isMulti: false, token: 'p1', isOptional: false });
 
 					// Assert
-					await expect(action()).rejects.toThrowError(`No provider found for 'p1' !`);
+					try {
+						await action();
+					} catch (e) {
+						const err: SarinaDependencyInjectionError = e;
+						expect(err.code).toBe('x0003');
+						expect(err.name).toBe('NoProviderForTokenFound');
+					}
 				});
 				it('should_fail_if_provider_is_single_and_multiple_instance_found', async () => {
 					// Arrange
+					expect.assertions(2);
 					const resolver = new ServiceResolver([
 						{
 							token: 'p1',
@@ -121,11 +195,17 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('p1');
 					const action = () => provider.resolveDependency(context, { isMulti: false, token: 'p1', isOptional: false });
 
 					// Assert
-					await expect(action()).rejects.toThrowError(`Multiple instance found for 'p1' token.`);
+					try {
+						await action();
+					} catch (e) {
+						const err: SarinaDependencyInjectionError = e;
+						expect(err.code).toBe('x0002');
+						expect(err.name).toBe('MultipleInstanceFound');
+					}
 				});
 				it('should_resolve_providers_in_order_of_registration_for_multiple', async () => {
 					// Arrange
@@ -152,7 +232,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('p1');
 					const result = await provider.resolveDependency(context, { isMulti: true, token: 'p1' });
 
 					// Assert
@@ -168,7 +248,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('token');
 					const value = await provider.resolveDependencies(context, []);
 
 					// Assert
@@ -193,7 +273,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('token');
 					const value = await provider.resolveDependencies(context, [
 						{ token: 'p1', isMulti: false, isOptional: false },
 						{ token: 'p2', isMulti: false, isOptional: false },
@@ -228,7 +308,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('token');
 					const value = await provider.resolveDependencies(context, [
 						{ token: 'p1', isMulti: false, isOptional: false },
 						{ token: 'p2', isMulti: false, isOptional: false },
@@ -256,7 +336,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('token');
 					const value = await provider.activate<string>(context, descriptor);
 
 					// Assert
@@ -277,7 +357,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('token');
 					await provider.activate(context, descriptor);
 
 					// Assert
@@ -317,7 +397,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('token');
 					const value = await provider.activate(context, desc1);
 
 					// Assert
@@ -341,7 +421,7 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const context = ResolutionContext.create();
+					const context = ResolutionContext.create('token');
 					const value = await provider.resolveOrActivate<string>(context, service1);
 
 					// Assert
@@ -366,8 +446,8 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act
-					const value1 = await provider.resolveOrActivate<Service>(ResolutionContext.create(), service1);
-					const value2 = await provider.resolveOrActivate<Service>(ResolutionContext.create(), service1);
+					const value1 = await provider.resolveOrActivate<Service>(ResolutionContext.create('token'), service1);
+					const value2 = await provider.resolveOrActivate<Service>(ResolutionContext.create('token'), service1);
 
 					// Assert
 					expect(provider.instances.size).toBe(1);
@@ -394,8 +474,8 @@ describe('dependency-injection', () => {
 						const provider = new ServiceProvider(resolver);
 
 						// Act
-						const v1 = await provider.resolveDescriptor<Service>(ResolutionContext.create(), descriptor);
-						const v2 = await provider.resolveDescriptor<Service>(ResolutionContext.create(), descriptor);
+						const v1 = await provider.resolveDescriptor<Service>(ResolutionContext.create('token'), descriptor);
+						const v2 = await provider.resolveDescriptor<Service>(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -421,8 +501,8 @@ describe('dependency-injection', () => {
 						const childProvider = new ServiceProvider(resolver, rootProvider);
 
 						// Act
-						const v1 = await rootProvider.resolveDescriptor<Service>(ResolutionContext.create(), descriptor);
-						const v2 = await childProvider.resolveDescriptor<Service>(ResolutionContext.create(), descriptor);
+						const v1 = await rootProvider.resolveDescriptor<Service>(ResolutionContext.create('token'), descriptor);
+						const v2 = await childProvider.resolveDescriptor<Service>(ResolutionContext.create('token'), descriptor);
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
 						expect(v2).toBeInstanceOf(Service);
@@ -449,7 +529,7 @@ describe('dependency-injection', () => {
 						const provider = new ServiceProvider(resolver);
 
 						// Act
-						const v1 = await provider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const v1 = await provider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -470,10 +550,10 @@ describe('dependency-injection', () => {
 						};
 						const resolver = new ServiceResolver([descriptor]);
 						const provider = new ServiceProvider(resolver);
-						const v1 = await provider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const v1 = await provider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Act
-						const v2 = await provider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const v2 = await provider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(v1).toBeInstanceOf(Service);
@@ -493,7 +573,7 @@ describe('dependency-injection', () => {
 						const scopedProvider = new ServiceProvider(resolver, rootProvider);
 
 						// Act
-						const v1 = await scopedProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const v1 = await scopedProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(v1).toBe('value');
@@ -513,11 +593,11 @@ describe('dependency-injection', () => {
 						const rootProvider = new ServiceProvider(resolver);
 						const scopedProvider = new ServiceProvider(resolver, rootProvider);
 						value = 'root';
-						const rootValue = await rootProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const rootValue = await rootProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Act
 						value = 'scoped';
-						const v1 = await scopedProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const v1 = await scopedProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(rootValue).toBe('root');
@@ -539,7 +619,7 @@ describe('dependency-injection', () => {
 						const provider = new ServiceProvider(resolver);
 
 						// Act
-						const value = await provider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const value = await provider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 						// Assert
 						expect(value).toBe('value');
 						expect(provider.instances.size).toBe(1);
@@ -557,7 +637,7 @@ describe('dependency-injection', () => {
 						const scopedProvider = new ServiceProvider(resolver, rootProvider);
 
 						// Act
-						const value = await scopedProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const value = await scopedProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(value).toBe('value');
@@ -578,7 +658,7 @@ describe('dependency-injection', () => {
 						const nestedProvider = new ServiceProvider(resolver, scopedProvider);
 
 						// Act
-						const value = await nestedProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const value = await nestedProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(value).toBe('value');
@@ -598,10 +678,10 @@ describe('dependency-injection', () => {
 						const resolver = new ServiceResolver([descriptor]);
 						const rootProvider = new ServiceProvider(resolver);
 						const scopedProvider = new ServiceProvider(resolver, rootProvider);
-						const rootValue = await rootProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const rootValue = await rootProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Act
-						const scopedValue = await scopedProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const scopedValue = await scopedProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(rootValue).toBe(value);
@@ -623,11 +703,11 @@ describe('dependency-injection', () => {
 						const rootProvider = new ServiceProvider(resolver);
 						const scoped1Provider = new ServiceProvider(resolver, rootProvider);
 						const scoped2Provider = new ServiceProvider(resolver, rootProvider);
-						const rootValue = await rootProvider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const rootValue = await rootProvider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Act
-						const scoped2Value = await scoped1Provider.resolveDescriptor(ResolutionContext.create(), descriptor);
-						const scoped1Value = await scoped2Provider.resolveDescriptor(ResolutionContext.create(), descriptor);
+						const scoped2Value = await scoped1Provider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
+						const scoped1Value = await scoped2Provider.resolveDescriptor(ResolutionContext.create('token'), descriptor);
 
 						// Assert
 						expect(rootValue).toBe(value);
@@ -648,7 +728,7 @@ describe('dependency-injection', () => {
 					const rootProvider = new ServiceProvider(resolver);
 
 					// Act
-					const instances = await rootProvider.resolveToken(ResolutionContext.create(), 'token');
+					const instances = await rootProvider.resolveToken(ResolutionContext.create('token'), 'token');
 
 					// Assert
 					expect(instances).toHaveLength(0);
@@ -671,7 +751,7 @@ describe('dependency-injection', () => {
 					const rootProvider = new ServiceProvider(resolver);
 
 					// Act
-					const instances = await rootProvider.resolveToken(ResolutionContext.create(), 'token');
+					const instances = await rootProvider.resolveToken(ResolutionContext.create('token'), 'token');
 
 					// Assert
 					expect(instances).toHaveLength(2);
@@ -696,7 +776,7 @@ describe('dependency-injection', () => {
 					const rootProvider = new ServiceProvider(resolver);
 
 					// Act
-					const instances = await rootProvider.resolveToken(ResolutionContext.create(), 'token');
+					const instances = await rootProvider.resolveToken(ResolutionContext.create('token'), 'token');
 
 					// Assert
 					expect(instances).toHaveLength(2);
@@ -722,9 +802,16 @@ describe('dependency-injection', () => {
 					const rootProvider = new ServiceProvider(resolver);
 
 					// Act
-					const action = async () => await rootProvider.resolveToken(ResolutionContext.create(), 'p2');
+					const action = async () => await rootProvider.resolveToken(ResolutionContext.create('token'), 'p2');
+
 					// Assert
-					expect(action()).rejects.toThrow('Cycle dependency found');
+					try {
+						await action();
+					} catch (e) {
+						const err: SarinaDependencyInjectionError = e;
+						expect(err.code).toBe('x0004');
+						expect(err.name).toBe('CycleDependencyDetected');
+					}
 				});
 			});
 			describe('createScope', () => {
@@ -846,7 +933,14 @@ describe('dependency-injection', () => {
 					const provider = new ServiceProvider(resolver);
 
 					// Act and Assert
-					expect(provider.get<string>('token')).rejects.toThrowError(`Multiple instance found for 'token' token.`);
+					try {
+						await provider.get<string>('token');
+					} catch (e) {
+						const err: SarinaDependencyInjectionError = e;
+						expect(err.code).toBe('x0002');
+						expect(err.name).toBe('MultipleInstanceFound');
+						expect(err.data['token']).toBe('token');
+					}
 				});
 			});
 

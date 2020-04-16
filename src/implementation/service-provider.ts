@@ -1,7 +1,8 @@
 import { Token } from '../interfaces/token';
-import { IServiceProvider } from './../interfaces/service-provider.interface';
-import { ServiceDescriptor, ServiceDependency, ServiceLifeTime } from '../interfaces/service-descriptor.model';
 import { ServiceResolver } from './service-resolver';
+import { SarinaDependencyInjectionError } from '../errors';
+import { IServiceProvider, SERVICE_PROVIDER_INJECTION_TOKEN } from './../interfaces/service-provider.interface';
+import { ServiceDescriptor, ServiceDependency, ServiceLifeTime } from '../interfaces/service-descriptor.model';
 
 // models
 export interface ServiceInstance<T = any> {
@@ -12,13 +13,16 @@ export interface ServiceInstance<T = any> {
 
 // interface
 export class ResolutionContext {
-	static create() {
-		return new ResolutionContext();
+	static create(token: Token) {
+		return new ResolutionContext(token);
 	}
 
+	public readonly requestedToken: Token;
 	public readonly activatingToken: Token[] = [];
 
-	constructor() {}
+	constructor(requestedToken: Token) {
+		this.requestedToken = requestedToken;
+	}
 
 	isActivating(token: Token) {
 		return this.activatingToken.indexOf(token) != -1;
@@ -44,19 +48,27 @@ export class ServiceProvider implements IServiceProvider {
 	public constructor(resolver: ServiceResolver, parent?: ServiceProvider) {
 		this.resolver = resolver;
 		this.parent = parent || null;
+
+		// we need to register IServiceProvider as service-provider
+		resolver.internalAddNewService({
+			lifetime: ServiceLifeTime.singleton,
+			token: SERVICE_PROVIDER_INJECTION_TOKEN,
+			dependencies: [],
+			factory: async () => this,
+		});
 	}
 
 	public has(token: Token): boolean {
 		return this.resolver.has(token);
 	}
 	public async get<TResult = any>(token: Token): Promise<TResult> {
-		const instances = await this.resolveToken(ResolutionContext.create(), token);
+		const instances = await this.resolveToken(ResolutionContext.create(token), token);
 		if (instances.length == 0) return null;
-		if (instances.length > 1) throw new Error(`Multiple instance found for '${token as any}' token.`);
+		if (instances.length > 1) throw SarinaDependencyInjectionError.MultipleInstanceFound(token, instances.length);
 		return instances[0];
 	}
 	public async getAll<TResult = any>(token: Token): Promise<TResult[]> {
-		const instances = await this.resolveToken(ResolutionContext.create(), token);
+		const instances = await this.resolveToken(ResolutionContext.create(token), token);
 		return instances;
 	}
 	public createScope(): IServiceProvider {
@@ -67,7 +79,8 @@ export class ServiceProvider implements IServiceProvider {
 		// if not exists we should return null
 		if (!this.has(token)) return [];
 
-		if (context.isActivating(token)) throw new Error('Cycle dependency found');
+		if (context.isActivating(token))
+			throw SarinaDependencyInjectionError.CycleDependencyDetected(context.requestedToken, token);
 		context.markAsActivating(token);
 
 		// resolve the descriptor
@@ -139,11 +152,12 @@ export class ServiceProvider implements IServiceProvider {
 
 		// if dependency is required and no instance found, we should throw error
 		if (instances.length == 0) {
-			if (!dependency.isOptional) throw new Error(`No provider found for '${dependency.token as any}' !`);
+			if (!dependency.isOptional) throw SarinaDependencyInjectionError.NoProviderForTokenFound(dependency.token);
 			return null;
 		}
 
-		if (instances.length > 1) throw new Error(`Multiple instance found for '${dependency.token as any}' token.`);
+		if (instances.length > 1)
+			throw SarinaDependencyInjectionError.MultipleInstanceFound(dependency.token, instances.length);
 
 		return instances[0];
 	}
