@@ -1,0 +1,57 @@
+{
+	"name": "@sarina/di",
+	"version": "1.0.2-pre01",
+	"description": "Simple dependency injection",
+	"keywords": [
+		"Sarina",
+		"SarinaJs",
+		"di",
+		"ioc",
+		"dependency injection",
+		"inversion of control",
+		"injection",
+		"service locator",
+		"typescript",
+		"dependency"
+	],
+	"homepage": "https://github.com/SarinaJs/sarina-di",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/SarinaJs/sarina-di"
+	},
+	"license": "MIT",
+	"author": "Ivan Parvareshi Hamrah",
+	"scripts": {
+		"build": "tsc --project tsconfig.build.json",
+		"test": "jest --coverage --env=jsdom",
+		"test:watch": "jest --coverage --env=jsdom --watch",
+		"tsc": "tsc",
+		"lint": "eslint src/**/**.ts test/**/**.ts"
+	},
+	"engines": {
+		"node": ">= 10.13.0"
+	},
+	"main": "dist/index.js",
+	"files": [
+		"dist",
+		"dist/index.js"
+	],
+	"devDependencies": {
+		"@types/jest": "^25.1.4",
+		"@types/node": "^13.9.2",
+		"@typescript-eslint/eslint-plugin": "^2.28.0",
+		"@typescript-eslint/parser": "^2.24.0",
+		"eslint": "^6.8.0",
+		"eslint-config-prettier": "^6.10.0",
+		"eslint-plugin-prettier": "^3.1.2",
+		"jest": "25.1.0",
+		"jest-theories": "^1.2.0",
+		"prettier": "^1.19.1",
+		"reflect-metadata": "^0.1.13",
+		"ts-jest": "^25.2.1",
+		"typescript": "^3.8.3"
+	},
+	"dependencies": {
+		"@sarina/annotation": "^1.0.3-pre01"
+	}
+}
