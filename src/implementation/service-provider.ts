@@ -38,17 +38,7 @@ export class ResolutionContext {
 
 export class ServiceProvider implements IServiceProvider {
 	public static createRootProvider(resolver: ServiceResolver): ServiceProvider {
-		const provider = new ServiceProvider(resolver);
-
-		// we need to register IServiceProvider as service-provider
-		resolver.internalAddNewService({
-			lifetime: ServiceLifeTime.singleton,
-			token: SERVICE_PROVIDER_INJECTION_TOKEN,
-			dependencies: [],
-			factory: async () => provider,
-		});
-
-		return provider;
+		return new ServiceProvider(resolver);
 	}
 
 	public readonly parent: ServiceProvider;
@@ -58,6 +48,14 @@ export class ServiceProvider implements IServiceProvider {
 	public constructor(resolver: ServiceResolver, parent?: ServiceProvider) {
 		this.resolver = resolver;
 		this.parent = parent || null;
+
+		// we need to register IServiceProvider as service-provider
+		resolver.internalAddNewService({
+			lifetime: ServiceLifeTime.singleton,
+			token: SERVICE_PROVIDER_INJECTION_TOKEN,
+			dependencies: [],
+			factory: async () => this,
+		});
 	}
 
 	public has(token: Token): boolean {
