@@ -54,7 +54,7 @@ describe('dependency-injection', () => {
 				expect(error.code).toBe('x0003');
 				expect(error.name).toBe('NoProviderForTokenFound');
 				expect(error.message).toBe(
-					"x0003: No provider found for 'token'.\n\t1. Make sure provider for 'token' have been registered.",
+					"x0003: No provider found for 'token'.\n\t1. Make sure provider for 'token' has been registered.",
 				);
 				expect(error.data['token']).toBe('token');
 			});
