@@ -32,7 +32,7 @@ export class SarinaDependencyInjectionError extends Error {
 	public static NoProviderForTokenFound(token: Token) {
 		return new ErrorBuilder('x0003', 'NoProviderForTokenFound')
 			.message(`No provider found for '${tokenToString(token)}'.`)
-			.addNote(`1. Make sure provider for '${tokenToString(token)}' have been registered.`)
+			.addNote(`1. Make sure provider for '${tokenToString(token)}' has been registered.`)
 			.addData('token', token)
 			.build();
 	}
