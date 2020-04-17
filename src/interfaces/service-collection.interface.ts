@@ -34,7 +34,7 @@ export interface IServiceCollection {
 		factory: (provider: IServiceProvider) => Promise<TService>,
 	): IServiceCollection;
 
-	addValue<T>(token: Type<any>, value: T): IServiceCollection;
+	addValue<T>(token: Token, value: T): IServiceCollection;
 
 	build(): IServiceProvider;
 }
